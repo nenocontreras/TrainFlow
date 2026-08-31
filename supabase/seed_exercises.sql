@@ -1,0 +1,190 @@
+-- =============================================================================
+-- TrainFlow — Biblioteca base de ejercicios (ejercicios de SISTEMA, coach_id NULL)
+--
+-- Idempotente: upsert por nombre sobre el índice parcial de la migración 0006.
+-- Ejecutar contra el proyecto (local o Cloud):
+--   psql "$SUPABASE_DB_URL" -f supabase/seed_exercises.sql
+--   -- o: supabase db push  y luego este archivo por separado
+--
+-- video_url: enlace de búsqueda de YouTube de la técnica del ejercicio. Es un
+-- punto de partida estable; el coach puede sustituirlo por un vídeo concreto.
+-- =============================================================================
+
+insert into public.exercise_library
+  (coach_id, name, muscle_group, movement_pattern, equipment, instructions, video_url)
+values
+  -- Pecho ---------------------------------------------------------------------
+  (null, 'Press de banca con barra', 'Pecho', 'Empuje horizontal', 'Barra',
+   'Escápulas retraídas y deprimidas, pies firmes. Baja la barra al esternón con codos a ~45°, empuja sin rebotar.',
+   'https://www.youtube.com/results?search_query=press+de+banca+con+barra+tecnica'),
+  (null, 'Press de banca inclinado con barra', 'Pecho', 'Empuje horizontal', 'Barra',
+   'Banco a 30-45°. Baja la barra a la parte alta del pecho, controla el descenso, empuja en línea recta.',
+   'https://www.youtube.com/results?search_query=press+inclinado+con+barra+tecnica'),
+  (null, 'Press de banca con mancuernas', 'Pecho', 'Empuje horizontal', 'Mancuernas',
+   'Mayor rango que con barra. Baja hasta sentir estiramiento en el pecho, junta arriba sin chocar las mancuernas.',
+   'https://www.youtube.com/results?search_query=press+de+banca+con+mancuernas+tecnica'),
+  (null, 'Aperturas con mancuernas', 'Pecho', 'Aislamiento', 'Mancuernas',
+   'Codos ligeramente flexionados y fijos. Abre en arco amplio hasta la altura del pecho, cierra apretando.',
+   'https://www.youtube.com/results?search_query=aperturas+con+mancuernas+pecho+tecnica'),
+  (null, 'Cruce de poleas', 'Pecho', 'Aislamiento', 'Polea',
+   'Ligera inclinación de tronco. Junta las manos delante del cuerpo describiendo un arco, controla la vuelta.',
+   'https://www.youtube.com/results?search_query=cruce+de+poleas+pecho+tecnica'),
+  (null, 'Fondos en paralelas', 'Pecho', 'Empuje horizontal', 'Peso corporal',
+   'Inclina el torso hacia delante para enfatizar pecho. Baja hasta que el hombro quede a la altura del codo.',
+   'https://www.youtube.com/results?search_query=fondos+en+paralelas+pecho+tecnica'),
+  (null, 'Flexiones', 'Pecho', 'Empuje horizontal', 'Peso corporal',
+   'Cuerpo en línea recta, glúteo y abdomen apretados. Baja el pecho al suelo con codos a ~45°.',
+   'https://www.youtube.com/results?search_query=flexiones+push+up+tecnica'),
+
+  -- Espalda -----------------------------------------------------------------
+  (null, 'Dominadas', 'Espalda', 'Tracción vertical', 'Peso corporal',
+   'Agarre algo más ancho que los hombros. Lleva el pecho a la barra, baja controlando hasta extender.',
+   'https://www.youtube.com/results?search_query=dominadas+pull+up+tecnica'),
+  (null, 'Jalón al pecho en polea', 'Espalda', 'Tracción vertical', 'Polea',
+   'Pecho alto, tira de la barra hacia la clavícula llevando los codos abajo y atrás. Evita balancearte.',
+   'https://www.youtube.com/results?search_query=jalon+al+pecho+polea+tecnica'),
+  (null, 'Remo con barra', 'Espalda', 'Tracción horizontal', 'Barra',
+   'Bisagra de cadera ~45°, espalda neutra. Tira de la barra al abdomen bajo, aprieta escápulas, baja controlado.',
+   'https://www.youtube.com/results?search_query=remo+con+barra+pendlay+tecnica'),
+  (null, 'Remo con mancuerna a una mano', 'Espalda', 'Tracción horizontal', 'Mancuernas',
+   'Apoya rodilla y mano en el banco, espalda paralela al suelo. Tira de la mancuerna a la cadera, sin rotar el torso.',
+   'https://www.youtube.com/results?search_query=remo+mancuerna+una+mano+tecnica'),
+  (null, 'Remo en polea baja sentado', 'Espalda', 'Tracción horizontal', 'Polea',
+   'Rodillas algo flexionadas, tronco vertical. Tira al abdomen juntando escápulas, no dejes que los hombros roten adelante.',
+   'https://www.youtube.com/results?search_query=remo+en+polea+baja+sentado+tecnica'),
+  (null, 'Peso muerto convencional', 'Espalda', 'Dominante de cadera', 'Barra',
+   'Barra pegada a las espinillas, espalda neutra, empuja el suelo. Extiende cadera y rodilla a la vez, bloquea arriba.',
+   'https://www.youtube.com/results?search_query=peso+muerto+convencional+tecnica'),
+  (null, 'Peso muerto rumano', 'Femoral y glúteo', 'Dominante de cadera', 'Barra',
+   'Rodillas casi fijas, lleva la cadera atrás bajando la barra pegada a las piernas hasta media espinilla, vuelve apretando glúteo.',
+   'https://www.youtube.com/results?search_query=peso+muerto+rumano+tecnica'),
+  (null, 'Pull-over con mancuerna', 'Espalda', 'Aislamiento', 'Mancuernas',
+   'Tumbado, lleva la mancuerna por detrás de la cabeza con codos semiflexionados, siente el estiramiento del dorsal.',
+   'https://www.youtube.com/results?search_query=pullover+con+mancuerna+tecnica'),
+  (null, 'Face pull', 'Espalda', 'Tracción horizontal', 'Polea',
+   'Polea a la altura de la cara. Tira de la cuerda hacia la frente separando las manos, rotando los hombros hacia atrás.',
+   'https://www.youtube.com/results?search_query=face+pull+tecnica'),
+  (null, 'Hiperextensiones en banco romano', 'Femoral y glúteo', 'Dominante de cadera', 'Peso corporal',
+   'Bisagra desde la cadera con espalda neutra. Sube hasta alinear el tronco con las piernas apretando glúteo.',
+   'https://www.youtube.com/results?search_query=hiperextensiones+banco+romano+tecnica'),
+
+  -- Hombros ---------------------------------------------------------------
+  (null, 'Press militar con barra de pie', 'Hombros', 'Empuje vertical', 'Barra',
+   'Barra a la altura de la clavícula, glúteo y abdomen apretados. Empuja vertical, mete la cabeza al final.',
+   'https://www.youtube.com/results?search_query=press+militar+con+barra+de+pie+tecnica'),
+  (null, 'Press de hombros con mancuernas', 'Hombros', 'Empuje vertical', 'Mancuernas',
+   'Sentado con respaldo. Baja hasta que el codo quede algo por debajo del hombro, empuja sin arquear la lumbar.',
+   'https://www.youtube.com/results?search_query=press+de+hombros+con+mancuernas+tecnica'),
+  (null, 'Elevaciones laterales con mancuernas', 'Hombros', 'Aislamiento', 'Mancuernas',
+   'Ligera inclinación de tronco, codos algo flexionados. Sube hasta la horizontal guiando con el codo, baja lento.',
+   'https://www.youtube.com/results?search_query=elevaciones+laterales+mancuernas+tecnica'),
+  (null, 'Elevaciones frontales con mancuernas', 'Hombros', 'Aislamiento', 'Mancuernas',
+   'Sube la mancuerna al frente hasta la altura de los ojos sin balanceo, controla la bajada.',
+   'https://www.youtube.com/results?search_query=elevaciones+frontales+mancuernas+tecnica'),
+  (null, 'Pájaros para deltoides posterior', 'Hombros', 'Aislamiento', 'Mancuernas',
+   'Tronco paralelo al suelo o sentado inclinado. Abre en arco llevando los codos arriba y atrás, sin usar la espalda alta.',
+   'https://www.youtube.com/results?search_query=pajaros+deltoides+posterior+tecnica'),
+  (null, 'Press Arnold', 'Hombros', 'Empuje vertical', 'Mancuernas',
+   'Empieza con palmas hacia ti; rota mientras empujas hasta terminar con palmas al frente. Movimiento continuo y controlado.',
+   'https://www.youtube.com/results?search_query=press+arnold+tecnica'),
+
+  -- Trapecio ------------------------------------------------------------
+  (null, 'Encogimientos con barra', 'Trapecio', 'Aislamiento', 'Barra',
+   'Sube los hombros hacia las orejas sin rodarlos, mantén 1 s arriba y baja controlando. Sin usar los brazos.',
+   'https://www.youtube.com/results?search_query=encogimientos+trapecio+barra+tecnica'),
+
+  -- Cuádriceps --------------------------------------------------------
+  (null, 'Sentadilla trasera con barra', 'Cuádriceps', 'Dominante de rodilla', 'Barra',
+   'Barra en trapecios, pies a la anchura de hombros. Baja llevando cadera atrás y abajo hasta romper la paralela, sube empujando el suelo.',
+   'https://www.youtube.com/results?search_query=sentadilla+trasera+con+barra+tecnica'),
+  (null, 'Sentadilla frontal con barra', 'Cuádriceps', 'Dominante de rodilla', 'Barra',
+   'Barra sobre los deltoides frontales, codos altos, torso vertical. Baja controlando, mantén el pecho arriba.',
+   'https://www.youtube.com/results?search_query=sentadilla+frontal+con+barra+tecnica'),
+  (null, 'Prensa de piernas', 'Cuádriceps', 'Dominante de rodilla', 'Máquina',
+   'Pies a la anchura de cadera en el centro de la plataforma. Baja hasta ~90° sin despegar la lumbar del respaldo.',
+   'https://www.youtube.com/results?search_query=prensa+de+piernas+tecnica'),
+  (null, 'Zancadas con mancuernas', 'Cuádriceps', 'Zancada / unilateral', 'Mancuernas',
+   'Paso largo, baja la rodilla trasera cerca del suelo con el torso erguido. Empuja con el talón delantero para volver.',
+   'https://www.youtube.com/results?search_query=zancadas+con+mancuernas+tecnica'),
+  (null, 'Sentadilla búlgara', 'Cuádriceps', 'Zancada / unilateral', 'Mancuernas',
+   'Pie trasero elevado en un banco. Baja vertical sobre la pierna delantera hasta el paralelo, rodilla estable.',
+   'https://www.youtube.com/results?search_query=sentadilla+bulgara+tecnica'),
+  (null, 'Extensión de cuádriceps en máquina', 'Cuádriceps', 'Aislamiento', 'Máquina',
+   'Ajusta el rodillo sobre el empeine. Extiende hasta casi bloquear apretando el cuádriceps, baja lento.',
+   'https://www.youtube.com/results?search_query=extension+de+cuadriceps+maquina+tecnica'),
+  (null, 'Sentadilla goblet con kettlebell', 'Cuádriceps', 'Dominante de rodilla', 'Kettlebell',
+   'Sujeta la kettlebell contra el pecho. Baja entre los talones manteniendo el torso vertical y los codos dentro de las rodillas.',
+   'https://www.youtube.com/results?search_query=sentadilla+goblet+kettlebell+tecnica'),
+
+  -- Femoral / Glúteo ------------------------------------------------
+  (null, 'Curl femoral tumbado en máquina', 'Femoral y glúteo', 'Aislamiento', 'Máquina',
+   'Cadera pegada al banco. Flexiona llevando el talón al glúteo con control, evita levantar la pelvis.',
+   'https://www.youtube.com/results?search_query=curl+femoral+tumbado+maquina+tecnica'),
+  (null, 'Hip thrust con barra', 'Glúteo', 'Dominante de cadera', 'Barra',
+   'Espalda alta apoyada en el banco, barra sobre la cadera. Empuja con los talones hasta alinear tronco y muslos, aprieta glúteo arriba.',
+   'https://www.youtube.com/results?search_query=hip+thrust+con+barra+tecnica'),
+  (null, 'Puente de glúteo', 'Glúteo', 'Dominante de cadera', 'Peso corporal',
+   'Tumbado, pies cerca del glúteo. Sube la cadera apretando glúteo sin arquear la lumbar, pausa arriba.',
+   'https://www.youtube.com/results?search_query=puente+de+gluteo+tecnica'),
+  (null, 'Buenos días con barra', 'Femoral y glúteo', 'Dominante de cadera', 'Barra',
+   'Barra en trapecios, rodillas semiflexionadas. Lleva la cadera atrás bajando el torso con espalda neutra, vuelve apretando glúteo.',
+   'https://www.youtube.com/results?search_query=buenos+dias+barra+good+morning+tecnica'),
+  (null, 'Swing con kettlebell', 'Glúteo', 'Dominante de cadera', 'Kettlebell',
+   'El impulso viene de la extensión explosiva de cadera, no de los brazos. La kettlebell llega a la altura del pecho.',
+   'https://www.youtube.com/results?search_query=kettlebell+swing+tecnica'),
+  (null, 'Peso muerto a una pierna con mancuerna', 'Femoral y glúteo', 'Dominante de cadera', 'Mancuernas',
+   'Bisagra sobre una pierna, la otra se extiende atrás como contrapeso. Espalda y cadera alineadas, sube apretando glúteo.',
+   'https://www.youtube.com/results?search_query=peso+muerto+una+pierna+mancuerna+tecnica'),
+
+  -- Pantorrilla ---------------------------------------------------
+  (null, 'Elevación de talones de pie', 'Pantorrilla', 'Aislamiento', 'Máquina',
+   'Rango completo: baja el talón por debajo del escalón y sube hasta la máxima punta, pausa arriba.',
+   'https://www.youtube.com/results?search_query=elevacion+de+talones+de+pie+tecnica'),
+  (null, 'Elevación de talones sentado', 'Pantorrilla', 'Aislamiento', 'Máquina',
+   'Rodilla a 90° para enfatizar el sóleo. Rango completo y controlado, sin rebotes.',
+   'https://www.youtube.com/results?search_query=elevacion+de+talones+sentado+tecnica'),
+
+  -- Bíceps --------------------------------------------------------
+  (null, 'Curl de bíceps con barra', 'Bíceps', 'Aislamiento', 'Barra',
+   'Codos pegados al cuerpo y fijos. Sube sin balanceo, aprieta arriba, baja controlando hasta extender.',
+   'https://www.youtube.com/results?search_query=curl+de+biceps+con+barra+tecnica'),
+  (null, 'Curl con mancuernas alterno', 'Bíceps', 'Aislamiento', 'Mancuernas',
+   'Supina la muñeca al subir. Alterna brazos sin usar el hombro ni la espalda para impulsar.',
+   'https://www.youtube.com/results?search_query=curl+mancuernas+alterno+tecnica'),
+  (null, 'Curl martillo', 'Bíceps', 'Aislamiento', 'Mancuernas',
+   'Agarre neutro (palmas enfrentadas). Trabaja braquial y antebrazo. Sin balanceo, control en la bajada.',
+   'https://www.youtube.com/results?search_query=curl+martillo+hammer+curl+tecnica'),
+
+  -- Tríceps -----------------------------------------------------
+  (null, 'Press francés con barra EZ', 'Tríceps', 'Aislamiento', 'Barra',
+   'Tumbado, codos apuntando al techo y fijos. Baja la barra hacia la frente, extiende sin abrir los codos.',
+   'https://www.youtube.com/results?search_query=press+frances+barra+ez+tecnica'),
+  (null, 'Extensión de tríceps en polea con cuerda', 'Tríceps', 'Aislamiento', 'Polea',
+   'Codos pegados al cuerpo. Extiende separando los extremos de la cuerda al final, vuelve controlando.',
+   'https://www.youtube.com/results?search_query=extension+de+triceps+polea+cuerda+tecnica'),
+  (null, 'Fondos entre bancos', 'Tríceps', 'Empuje horizontal', 'Peso corporal',
+   'Manos al borde del banco, codos hacia atrás. Baja hasta ~90° de codo sin hundir los hombros.',
+   'https://www.youtube.com/results?search_query=fondos+de+triceps+entre+bancos+tecnica'),
+
+  -- Core --------------------------------------------------------
+  (null, 'Plancha frontal', 'Core', 'Anti-extensión', 'Peso corporal',
+   'Antebrazos bajo los hombros, cuerpo en línea. Aprieta glúteo y abdomen, no dejes caer la cadera.',
+   'https://www.youtube.com/results?search_query=plancha+frontal+plank+tecnica'),
+  (null, 'Rueda abdominal', 'Core', 'Anti-extensión', 'Peso corporal',
+   'Desde rodillas, rueda hacia delante manteniendo la lumbar neutra (sin arquear), vuelve con el abdomen.',
+   'https://www.youtube.com/results?search_query=rueda+abdominal+ab+wheel+tecnica'),
+  (null, 'Elevación de piernas colgado', 'Core', 'Flexión de tronco', 'Peso corporal',
+   'Colgado de la barra sin balanceo. Sube las piernas rectas o rodillas al pecho llevando la pelvis hacia arriba.',
+   'https://www.youtube.com/results?search_query=elevacion+de+piernas+colgado+tecnica'),
+  (null, 'Pallof press', 'Core', 'Anti-rotación', 'Polea',
+   'De perfil a la polea. Extiende los brazos al frente resistiendo la rotación del tronco, vuelve al pecho.',
+   'https://www.youtube.com/results?search_query=pallof+press+tecnica'),
+  (null, 'Plancha lateral', 'Core', 'Anti-rotación', 'Peso corporal',
+   'Codo bajo el hombro, cuerpo en línea recta de perfil. Eleva la cadera y mantén sin rotar.',
+   'https://www.youtube.com/results?search_query=plancha+lateral+side+plank+tecnica')
+on conflict (name) where coach_id is null do update set
+  muscle_group = excluded.muscle_group,
+  movement_pattern = excluded.movement_pattern,
+  equipment = excluded.equipment,
+  instructions = excluded.instructions,
+  video_url = excluded.video_url;

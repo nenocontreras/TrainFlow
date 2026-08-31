@@ -77,28 +77,37 @@ export type Database = {
         Row: {
           coach_id: string | null
           created_at: string | null
+          equipment: string | null
           id: string
           instructions: string | null
+          movement_pattern: string | null
           muscle_group: string | null
           name: string
+          tempo: string | null
           video_url: string | null
         }
         Insert: {
           coach_id?: string | null
           created_at?: string | null
+          equipment?: string | null
           id?: string
           instructions?: string | null
+          movement_pattern?: string | null
           muscle_group?: string | null
           name: string
+          tempo?: string | null
           video_url?: string | null
         }
         Update: {
           coach_id?: string | null
           created_at?: string | null
+          equipment?: string | null
           id?: string
           instructions?: string | null
+          movement_pattern?: string | null
           muscle_group?: string | null
           name?: string
+          tempo?: string | null
           video_url?: string | null
         }
         Relationships: [

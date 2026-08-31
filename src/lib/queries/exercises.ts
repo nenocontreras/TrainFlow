@@ -4,7 +4,14 @@ import type { Database } from "@/lib/supabase/types";
 
 export type Exercise = Database["public"]["Tables"]["exercise_library"]["Row"];
 
-/** Ejercicios de la biblioteca del coach actual, por nombre. */
+export function isSystemExercise(ex: Pick<Exercise, "coach_id">): boolean {
+  return ex.coach_id === null;
+}
+
+/**
+ * Biblioteca visible para el coach: sus ejercicios + los de sistema
+ * (coach_id NULL). Ordenados por nombre.
+ */
 export async function listExercises(): Promise<Exercise[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
