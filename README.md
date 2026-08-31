@@ -128,6 +128,20 @@ pnpm dev            # http://localhost:3000
   haría cascade sobre sesiones ya registradas).
 - Lógica de orden en `src/lib/ordering.ts` (helpers puros con test).
 
+## Asignación y entrenamiento (Fase 3)
+
+- **Coach vincula atletas por email** (`/atletas`): el atleta debe tener cuenta;
+  la función `link_athlete_by_email` valida rol y crea la relación.
+- **Asignar planes** (`/atletas/[id]`): plan + fecha de inicio. "Finalizar"
+  desactiva la asignación sin borrar las sesiones. Una asignación activa por
+  (plan, atleta).
+- **Vista "Hoy"** del atleta (`/hoy`): el día del plan se resuelve por **rotación
+  por progreso** (`src/lib/today.ts`) — el siguiente del ciclo según sesiones
+  hechas; el atleta puede elegir otro. "Empezar" crea la sesión y sus series;
+  registro con steppers +/- de peso y reps, botón "hecho" con feedback optimista
+  (`useOptimistic`). Nota final. Descartar sesión.
+- **Historial** (`/historial`): sesiones pasadas con fecha, día y series completadas.
+
 ## Layout
 
 - **Móvil**: contenedor compacto tipo PWA, top bar mínima y navegación inferior
@@ -143,7 +157,8 @@ pnpm dev            # http://localhost:3000
 - **Fase 1** (auth + perfiles + roles) — completada · `feat/phase-1-auth`.
 - **Fase 2** (ejercicios + planes) — completada · `feat/phase-2-plans`.
 - **Mejoras** (biblioteca base + layout responsive) — `feat/exercise-library-and-responsive`.
-- Siguiente: Fase 3 — asignación de planes + vista "Hoy" del atleta.
+- **Fase 3** (asignación + "Hoy" + historial) — `feat/phase-3-assignment-today`.
+- Siguiente: Fase 4 — dashboard del coach + gráficas de adherencia y progreso.
 
 Roadmap en la sección 13 del SPEC.
 
@@ -155,5 +170,16 @@ Roadmap en la sección 13 del SPEC.
 - Personal Access Token de Supabase (`supabase login`) para `db:push` / `db:types`
   / `db:seed:exercises` sin pasar la connection string a mano.
 - Desactivar "Confirm email" en el proyecto Supabase (ver arriba).
+- Activar "Leaked password protection" en Authentication (advisor de Supabase).
 - Revisar/sustituir las URLs de vídeo de los 50 ejercicios base (ahora son
   búsquedas de YouTube de la técnica) por enlaces canónicos si se prefiere.
+
+## Deuda técnica anotada
+
+- `workout_sessions.plan_day_id` y `session_sets.plan_exercise_id` no tienen
+  `on delete` → borrar un día/ejercicio de un plan **ya entrenado** falla con
+  error de FK en vez de conservar el historial con la referencia a `null`.
+  Arreglo: migración con `on delete set null` (natural en la Fase 4).
+- Los helpers `SECURITY DEFINER` siguen siendo ejecutables por `authenticated`
+  vía `/rest/v1/rpc/*` (advisor WARN). No hay leak (devuelven booleanos scoped a
+  `auth.uid()`), pero moverlos a un esquema `private` sería lo correcto.
