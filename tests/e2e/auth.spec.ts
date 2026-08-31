@@ -12,6 +12,23 @@ test("una ruta protegida sin sesión redirige a /login", async ({ page }) => {
   await expect(page).toHaveURL(/\/login\?next=%2Fdashboard/);
 });
 
+test("el login muestra los campos con icono", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(page.getByLabel("Contraseña")).toBeVisible();
+  // los iconos guía se renderizan dentro del contenedor del campo
+  await expect(page.locator("form .relative svg").first()).toBeVisible();
+});
+
+test("la pantalla de confirmar correo se muestra bien (no como error)", async ({ page }) => {
+  await page.goto("/confirmar-correo?email=ana%40mail.com");
+  await expect(page.getByRole("heading", { name: "Confirma tu correo" })).toBeVisible();
+  await expect(page.getByText("ana@mail.com")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reenviar correo" })).toBeVisible();
+  // El aviso no debe presentarse como error (rojo / role=alert) dentro del panel.
+  await expect(page.locator("main [role='alert']")).toHaveCount(0);
+});
+
 test.describe("con credenciales de Supabase", () => {
   test.skip(!E2E_READY, "requiere NEXT_PUBLIC_SUPABASE_URL / keys");
 

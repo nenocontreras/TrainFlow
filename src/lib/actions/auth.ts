@@ -8,6 +8,8 @@ import { isRole, landingPathFor } from "@/types";
 
 export type AuthFormState = {
   error?: string;
+  info?: string;
+  success?: string;
   fieldErrors?: Record<string, string[] | undefined>;
 };
 
@@ -67,12 +69,30 @@ export async function signUpAction(
     };
   }
 
-  // Si el proyecto exige confirmación por email, no hay sesión todavía.
+  // Si el proyecto exige confirmación por email, no hay sesión todavía:
+  // llevamos a una pantalla dedicada (no es un error).
   if (!data.session) {
-    return { error: "Revisa tu email para confirmar la cuenta antes de entrar." };
+    redirect(`/confirmar-correo?email=${encodeURIComponent(parsed.data.email)}`);
   }
 
   redirect(landingPathFor(parsed.data.role));
+}
+
+export async function resendConfirmationAction(
+  _prev: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const email = z.string().email().safeParse(formData.get("email"));
+  if (!email.success) return { error: "Email no válido." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({ type: "signup", email: email.data });
+  // No revelamos si el email existe o no.
+  if (error && !/rate limit/i.test(error.message)) {
+    return { error: "No se pudo reenviar el correo. Inténtalo en un momento." };
+  }
+  if (error) return { info: "Espera un momento antes de volver a pedir el correo." };
+  return { success: "Correo reenviado. Revisa tu bandeja de entrada y el spam." };
 }
 
 export async function signOutAction(): Promise<void> {

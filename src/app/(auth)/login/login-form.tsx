@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { Lock, Mail } from "lucide-react";
 import { signInAction, type AuthFormState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IconInput } from "@/components/icon-input";
+import { AuthMessage } from "@/components/auth-message";
+import { FieldError } from "@/components/field-error";
 
 const initialState: AuthFormState = {};
 
@@ -16,23 +19,30 @@ export function LoginForm({ next }: { next?: string }) {
     <form action={formAction} className="flex flex-col gap-5">
       <h1 className="text-xl font-bold">Entrar</h1>
 
-      {state.error ? (
-        <p role="alert" className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">
-          {state.error}
-        </p>
-      ) : null}
+      {state.error ? <AuthMessage variant="error">{state.error}</AuthMessage> : null}
 
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
+        <IconInput
+          icon={Mail}
+          id="email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="tu@correo.com"
+          required
+          autoFocus
+        />
         <FieldError messages={state.fieldErrors?.email} />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">Contraseña</Label>
-        <Input
+        <IconInput
+          icon={Lock}
           id="password"
           name="password"
           type="password"
@@ -54,9 +64,4 @@ export function LoginForm({ next }: { next?: string }) {
       </p>
     </form>
   );
-}
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return <p className="text-destructive text-sm">{messages[0]}</p>;
 }

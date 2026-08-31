@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { Dumbbell, Users } from "lucide-react";
+import { Dumbbell, Lock, Mail, User, Users } from "lucide-react";
 import { signUpAction, type AuthFormState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IconInput } from "@/components/icon-input";
+import { AuthMessage } from "@/components/auth-message";
+import { FieldError } from "@/components/field-error";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
 
@@ -30,11 +32,7 @@ export function RegisterForm() {
     <form action={formAction} className="flex flex-col gap-5">
       <h1 className="text-xl font-bold">Crear cuenta</h1>
 
-      {state.error ? (
-        <p role="alert" className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">
-          {state.error}
-        </p>
-      ) : null}
+      {state.error ? <AuthMessage variant="error">{state.error}</AuthMessage> : null}
 
       <input type="hidden" name="role" value={role} />
       <fieldset className="flex flex-col gap-2">
@@ -66,19 +64,36 @@ export function RegisterForm() {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="fullName">Nombre</Label>
-        <Input id="fullName" name="fullName" autoComplete="name" required autoFocus />
+        <IconInput
+          icon={User}
+          id="fullName"
+          name="fullName"
+          autoComplete="name"
+          required
+          autoFocus
+        />
         <FieldError messages={state.fieldErrors?.fullName} />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <IconInput
+          icon={Mail}
+          id="email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="tu@correo.com"
+          required
+        />
         <FieldError messages={state.fieldErrors?.email} />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">Contraseña</Label>
-        <Input
+        <IconInput
+          icon={Lock}
           id="password"
           name="password"
           type="password"
@@ -102,9 +117,4 @@ export function RegisterForm() {
       </p>
     </form>
   );
-}
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return <p className="text-destructive text-sm">{messages[0]}</p>;
 }
