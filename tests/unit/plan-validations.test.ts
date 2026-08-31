@@ -25,6 +25,18 @@ describe("exerciseSchema", () => {
   it("exige nombre de al menos 2 caracteres", () => {
     expect(exerciseSchema.safeParse({ name: "x" }).success).toBe(false);
   });
+
+  it("acepta patrón de movimiento, equipamiento y tempo libres", () => {
+    const r = exerciseSchema.parse({
+      name: "Press banca",
+      movementPattern: "Empuje horizontal",
+      equipment: "Barra",
+      tempo: "3-1-1-0",
+    });
+    expect(r.movementPattern).toBe("Empuje horizontal");
+    expect(r.equipment).toBe("Barra");
+    expect(r.tempo).toBe("3-1-1-0");
+  });
 });
 
 describe("planSchema", () => {

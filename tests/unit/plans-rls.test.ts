@@ -119,7 +119,11 @@ function runPlansRlsSuite(): void {
     });
 
     it("coach B no ve ni toca los ejercicios ni planes de A", async () => {
-      expect((await clientB.from("exercise_library").select("id")).data ?? []).toHaveLength(0);
+      // Coach B puede ver ejercicios de sistema, pero NO los propios de A.
+      const bLib = await clientB.from("exercise_library").select("id, coach_id");
+      expect((bLib.data ?? []).some((e) => e.id === ctx.exerciseId)).toBe(false);
+      expect((bLib.data ?? []).every((e) => e.coach_id === null)).toBe(true);
+
       expect((await clientB.from("training_plans").select("id")).data ?? []).toHaveLength(0);
       expect((await clientB.from("plan_days").select("id")).data ?? []).toHaveLength(0);
 
@@ -153,7 +157,11 @@ function runPlansRlsSuite(): void {
       expect((await clientAthlete.from("plan_days").select("id")).data ?? []).toHaveLength(1);
       expect((await clientAthlete.from("plan_exercises").select("id")).data ?? []).toHaveLength(1);
 
-      const lib = await clientAthlete.from("exercise_library").select("id, name");
+      // El atleta ve el ejercicio de A porque está en su plan asignado.
+      const lib = await clientAthlete
+        .from("exercise_library")
+        .select("id, name")
+        .eq("id", ctx.exerciseId);
       expect(lib.data ?? []).toHaveLength(1);
       expect(lib.data?.[0]?.name).toBe("Press banca");
 

@@ -21,6 +21,11 @@ export default defineConfig({
     // `// @vitest-environment jsdom` en su cabecera.
     environment: "node",
     include: ["tests/unit/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
+    // Un único proceso: evita que el pool de workers agote la RAM en equipos
+    // con poca memoria. Los tests son rápidos y en su mayoría de I/O.
+    pool: "forks",
+    poolOptions: { forks: { singleFork: true } },
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       reportsDirectory: "./coverage",
