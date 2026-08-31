@@ -185,6 +185,17 @@ function describeRlsSuite(): void {
       expect(error).not.toBeNull();
     });
 
+    it("el atleta B NO puede colgar una sesión suya de la asignación de A", async () => {
+      // athlete_id = B (uno mismo) pero plan_assignment_id de A -> debe fallar
+      // (migración 0008: athlete_owns_assignment).
+      const { error } = await clientB.from("workout_sessions").insert({
+        plan_assignment_id: ctx.assignmentAId,
+        plan_day_id: ctx.planDayId,
+        athlete_id: ids.athleteB,
+      });
+      expect(error).not.toBeNull();
+    });
+
     it("el atleta B NO puede leer un plan que no tiene asignado", async () => {
       const { data } = await clientB.from("training_plans").select("id");
       expect(data ?? []).toHaveLength(0);

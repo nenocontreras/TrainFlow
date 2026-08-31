@@ -10,5 +10,3 @@ export const assignPlanSchema = z.object({
   athleteId: z.guid("Atleta no válido"),
   startDate: isoDate,
 });
-
-export type AssignPlanInput = z.infer<typeof assignPlanSchema>;

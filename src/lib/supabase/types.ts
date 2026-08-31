@@ -414,6 +414,10 @@ export type Database = {
         Args: { _plan_day: string }
         Returns: boolean
       }
+      athlete_owns_assignment: {
+        Args: { _assignment: string }
+        Returns: boolean
+      }
       athlete_owns_session: { Args: { _session: string }; Returns: boolean }
       coach_can_read_assignment: {
         Args: { _assignment: string }
@@ -438,6 +442,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      plan_exercise_in_session: {
+        Args: { _plan_exercise: string; _session: string }
+        Returns: boolean
       }
     }
     Enums: {

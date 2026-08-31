@@ -9,7 +9,8 @@ import type { ActionState } from "@/lib/actions/exercises";
 
 export type { ActionState };
 
-const KNOWN_LINK_ERRORS = new Set(["TF401", "TF404", "TF409", "TF422"]);
+// Mensajes en español que levanta link_athlete_by_email (SQLSTATE propios).
+const KNOWN_LINK_ERRORS = new Set(["TF401", "TF404", "TF409"]);
 
 export async function linkAthleteAction(
   _prev: ActionState,
