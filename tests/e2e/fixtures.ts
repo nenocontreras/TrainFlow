@@ -18,12 +18,19 @@ export function adminClient() {
   });
 }
 
+async function findUserId(email: string): Promise<string | undefined> {
+  const admin = adminClient();
+  const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  return data?.users?.find((u) => u.email === email)?.id;
+}
+
 /** Crea (idempotente) los usuarios confirmados que usan los tests e2e. */
 export async function ensureE2EUsers(): Promise<void> {
   if (!E2E_READY) return;
   const admin = adminClient();
-  const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
-  const existing = new Set((data?.users ?? []).map((u) => u.email));
+  const existing = new Set(
+    ((await admin.auth.admin.listUsers({ perPage: 1000 })).data?.users ?? []).map((u) => u.email),
+  );
 
   for (const [role, email] of Object.entries(E2E_USERS)) {
     if (existing.has(email)) continue;
@@ -35,4 +42,14 @@ export async function ensureE2EUsers(): Promise<void> {
     });
     if (error) throw error;
   }
+}
+
+/** Borra planes y ejercicios del coach e2e para que cada corrida empiece limpia. */
+export async function resetE2ECoachData(): Promise<void> {
+  if (!E2E_READY) return;
+  const coachId = await findUserId(E2E_USERS.coach);
+  if (!coachId) return;
+  const admin = adminClient();
+  await admin.from("training_plans").delete().eq("coach_id", coachId);
+  await admin.from("exercise_library").delete().eq("coach_id", coachId);
 }
