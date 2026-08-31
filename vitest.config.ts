@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import react from "@vitejs/plugin-react";
 import { config as loadEnv } from "dotenv";
 import { defineConfig } from "vitest/config";
 
@@ -9,20 +10,21 @@ loadEnv({ path: ".env.test.local" });
 loadEnv({ path: ".env.local" });
 
 export default defineConfig({
+  plugins: [react()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   test: {
-    // `node` por defecto (rápido). Los tests de componentes de la Fase 1
-    // declararán `// @vitest-environment jsdom` por archivo.
+    // `node` por defecto (rápido). Los tests de componentes declaran
+    // `// @vitest-environment jsdom` en su cabecera.
     environment: "node",
     include: ["tests/unit/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reportsDirectory: "./coverage",
-      include: ["src/lib/**/*.ts", "src/hooks/**/*.ts"],
+      include: ["src/lib/**/*.ts", "src/hooks/**/*.ts", "src/types/**/*.ts"],
       exclude: ["src/lib/supabase/types.ts", "**/*.d.ts"],
     },
   },
