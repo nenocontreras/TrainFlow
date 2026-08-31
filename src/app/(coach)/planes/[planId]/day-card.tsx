@@ -16,9 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PlanExerciseForm } from "./plan-exercise-form";
 import { RenameDayForm } from "./day-forms";
-import type { Exercise } from "@/lib/queries/exercises";
 import type { PlanDayDetail, PlanExerciseDetail } from "@/lib/queries/plans";
 
 function HiddenIds(props: Record<string, string>) {
@@ -34,19 +32,21 @@ function HiddenIds(props: Record<string, string>) {
 export function DayCard({
   planId,
   day,
-  library,
   isFirst,
   isLast,
+  canAddExercise,
+  onAddExercise,
+  onEditExercise,
 }: {
   planId: string;
   day: PlanDayDetail;
-  library: Exercise[];
   isFirst: boolean;
   isLast: boolean;
+  canAddExercise: boolean;
+  onAddExercise: (dayId: string) => void;
+  onEditExercise: (pe: PlanExerciseDetail) => void;
 }) {
   const [renaming, setRenaming] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<PlanExerciseDetail | null>(null);
 
   return (
     <section className="bg-card rounded-lg border">
@@ -94,10 +94,9 @@ export function DayCard({
                 variant="destructive"
                 onSelect={(e) => {
                   e.preventDefault();
-                  const form = document.getElementById(
-                    `del-day-${day.id}`,
-                  ) as HTMLFormElement | null;
-                  form?.requestSubmit();
+                  (
+                    document.getElementById(`del-day-${day.id}`) as HTMLFormElement | null
+                  )?.requestSubmit();
                 }}
               >
                 <Trash2 className="size-4" /> Eliminar día
@@ -159,7 +158,7 @@ export function DayCard({
                     variant="ghost"
                     size="icon"
                     aria-label="Editar ejercicio"
-                    onClick={() => setEditing(pe)}
+                    onClick={() => onEditExercise(pe)}
                   >
                     <Pencil className="size-4" />
                   </Button>
@@ -179,16 +178,11 @@ export function DayCard({
           variant="outline"
           size="sm"
           className="self-start"
-          disabled={library.length === 0}
-          onClick={() => setAdding(true)}
+          disabled={!canAddExercise}
+          onClick={() => onAddExercise(day.id)}
         >
           <Plus className="size-4" /> Añadir ejercicio
         </Button>
-        {library.length === 0 ? (
-          <p className="text-muted-foreground text-xs">
-            Crea ejercicios en la biblioteca para poder añadirlos.
-          </p>
-        ) : null}
       </div>
 
       <Dialog open={renaming} onOpenChange={setRenaming}>
@@ -202,37 +196,6 @@ export function DayCard({
             currentLabel={day.label}
             onDone={() => setRenaming(false)}
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={adding} onOpenChange={setAdding}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Añadir ejercicio a “{day.label}”</DialogTitle>
-          </DialogHeader>
-          <PlanExerciseForm
-            planId={planId}
-            dayId={day.id}
-            library={library}
-            onDone={() => setAdding(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={Boolean(editing)} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar ejercicio</DialogTitle>
-          </DialogHeader>
-          {editing ? (
-            <PlanExerciseForm
-              planId={planId}
-              dayId={day.id}
-              library={library}
-              existing={editing}
-              onDone={() => setEditing(null)}
-            />
-          ) : null}
         </DialogContent>
       </Dialog>
     </section>

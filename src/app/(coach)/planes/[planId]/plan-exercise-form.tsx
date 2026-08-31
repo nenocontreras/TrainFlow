@@ -20,20 +20,24 @@ import {
 } from "@/components/ui/select";
 import { FieldError } from "@/components/field-error";
 import type { Exercise } from "@/lib/queries/exercises";
-import type { PlanExerciseDetail } from "@/lib/queries/plans";
+import type { PlanDayDetail, PlanExerciseDetail } from "@/lib/queries/plans";
 
 const initial: ActionState = {};
 
 export function PlanExerciseForm({
   planId,
-  dayId,
+  days,
+  currentDayId,
   library,
+  presetExerciseId,
   existing,
   onDone,
 }: {
   planId: string;
-  dayId: string;
+  days: Pick<PlanDayDetail, "id" | "label">[];
+  currentDayId: string;
   library: Exercise[];
+  presetExerciseId?: string;
   existing?: PlanExerciseDetail;
   onDone: () => void;
 }) {
@@ -50,11 +54,13 @@ export function PlanExerciseForm({
     }
   }, [state.ok, isEdit, onDone]);
 
+  const showDayPicker = !isEdit && days.length > 1;
+
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="planId" value={planId} />
-      <input type="hidden" name="dayId" value={dayId} />
       {existing ? <input type="hidden" name="id" value={existing.id} /> : null}
+      {showDayPicker ? null : <input type="hidden" name="dayId" value={currentDayId} />}
 
       {state.error ? (
         <p role="alert" className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">
@@ -62,9 +68,30 @@ export function PlanExerciseForm({
         </p>
       ) : null}
 
+      {showDayPicker ? (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="dayId">Día</Label>
+          <select
+            id="dayId"
+            name="dayId"
+            defaultValue={currentDayId}
+            className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+          >
+            {days.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-2">
         <Label htmlFor="exerciseId">Ejercicio</Label>
-        <Select name="exerciseId" defaultValue={existing?.exercise_id ?? undefined}>
+        <Select
+          name="exerciseId"
+          defaultValue={existing?.exercise_id ?? presetExerciseId ?? undefined}
+        >
           <SelectTrigger id="exerciseId">
             <SelectValue placeholder="Elige de tu biblioteca" />
           </SelectTrigger>
