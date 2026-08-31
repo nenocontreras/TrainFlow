@@ -7,6 +7,11 @@ import {
   updateExerciseAction,
   type ActionState,
 } from "@/lib/actions/exercises";
+import {
+  EQUIPMENT_OPTIONS,
+  MOVEMENT_PATTERN_OPTIONS,
+  MUSCLE_GROUP_OPTIONS,
+} from "@/lib/validations/exercise";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,15 +48,68 @@ export function ExerciseForm({ exercise, onDone }: { exercise?: Exercise; onDone
         <FieldError messages={state.fieldErrors?.name} />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="muscleGroup">Grupo muscular</Label>
-        <Input
-          id="muscleGroup"
-          name="muscleGroup"
-          defaultValue={exercise?.muscle_group ?? ""}
-          placeholder="Pecho, Pierna, Espalda…"
-        />
-        <FieldError messages={state.fieldErrors?.muscleGroup} />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="muscleGroup">Grupo muscular</Label>
+          <Input
+            id="muscleGroup"
+            name="muscleGroup"
+            list="muscle-groups"
+            defaultValue={exercise?.muscle_group ?? ""}
+            placeholder="Pecho, Pierna…"
+          />
+          <datalist id="muscle-groups">
+            {MUSCLE_GROUP_OPTIONS.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
+          <FieldError messages={state.fieldErrors?.muscleGroup} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="equipment">Equipamiento</Label>
+          <Input
+            id="equipment"
+            name="equipment"
+            list="equipment-options"
+            defaultValue={exercise?.equipment ?? ""}
+            placeholder="Barra, Mancuernas…"
+          />
+          <datalist id="equipment-options">
+            {EQUIPMENT_OPTIONS.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
+          <FieldError messages={state.fieldErrors?.equipment} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="movementPattern">Patrón de movimiento</Label>
+          <Input
+            id="movementPattern"
+            name="movementPattern"
+            list="movement-patterns"
+            defaultValue={exercise?.movement_pattern ?? ""}
+            placeholder="Empuje horizontal…"
+          />
+          <datalist id="movement-patterns">
+            {MOVEMENT_PATTERN_OPTIONS.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
+          <FieldError messages={state.fieldErrors?.movementPattern} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="tempo">Tempo</Label>
+          <Input
+            id="tempo"
+            name="tempo"
+            defaultValue={exercise?.tempo ?? ""}
+            placeholder="3-1-1-0"
+          />
+          <FieldError messages={state.fieldErrors?.tempo} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
