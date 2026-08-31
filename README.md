@@ -176,10 +176,15 @@ Roadmap en la sección 13 del SPEC.
 
 ## Deuda técnica anotada
 
+Para una migración de endurecimiento en la Fase 4:
+
 - `workout_sessions.plan_day_id` y `session_sets.plan_exercise_id` no tienen
   `on delete` → borrar un día/ejercicio de un plan **ya entrenado** falla con
-  error de FK en vez de conservar el historial con la referencia a `null`.
-  Arreglo: migración con `on delete set null` (natural en la Fase 4).
+  error de FK en vez de conservar el historial con la referencia a `null`
+  (`on delete set null`).
+- No hay índice único que garantice **una sesión por día y asignación** — hoy
+  solo lo comprueba `startSessionAction` (con el botón deshabilitado durante el
+  envío). Falta un índice parcial sobre `(plan_assignment_id, performed_at::date)`.
 - Los helpers `SECURITY DEFINER` siguen siendo ejecutables por `authenticated`
   vía `/rest/v1/rpc/*` (advisor WARN). No hay leak (devuelven booleanos scoped a
   `auth.uid()`), pero moverlos a un esquema `private` sería lo correcto.
