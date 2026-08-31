@@ -61,12 +61,16 @@ function describeRlsSuite(): void {
     let clientB: SupabaseClient;
     let clientCoach: SupabaseClient;
 
-    async function createUser(email: string, fullName: string): Promise<string> {
+    async function createUser(
+      email: string,
+      fullName: string,
+      role: "coach" | "athlete" = "athlete",
+    ): Promise<string> {
       const { data, error } = await admin.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
-        user_metadata: { full_name: fullName },
+        user_metadata: { full_name: fullName, role },
       });
       if (error) throw error;
       return data.user.id;
@@ -82,7 +86,7 @@ function describeRlsSuite(): void {
     }
 
     beforeAll(async () => {
-      ids.coach = await createUser(emails.coach, "Coach Test");
+      ids.coach = await createUser(emails.coach, "Coach Test", "coach");
       ids.athleteA = await createUser(emails.athleteA, "Athlete A");
       ids.athleteB = await createUser(emails.athleteB, "Athlete B");
 
@@ -207,6 +211,63 @@ function describeRlsSuite(): void {
         .select("id");
       // RLS sin política de UPDATE para el coach => 0 filas afectadas.
       expect(data ?? []).toHaveLength(0);
+    });
+
+    // --- Fase 3: vínculo por email y asignación de planes -------------------
+
+    it("un atleta NO puede usar link_athlete_by_email", async () => {
+      const { error } = await clientA.rpc("link_athlete_by_email", {
+        _email: emails.athleteB,
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("el coach vincula al atleta B por email", async () => {
+      const { data, error } = await clientCoach.rpc("link_athlete_by_email", {
+        _email: emails.athleteB.toUpperCase(), // se normaliza
+      });
+      expect(error).toBeNull();
+      expect(data?.id).toBe(ids.athleteB);
+    });
+
+    it("el coach NO puede asignar su plan a un atleta que no es suyo", async () => {
+      // El test anterior vinculó a B; lo desvinculamos para comprobar la policy.
+      await admin
+        .from("coach_athlete_relationships")
+        .delete()
+        .eq("coach_id", ids.coach)
+        .eq("athlete_id", ids.athleteB);
+
+      const { error } = await clientCoach.from("plan_assignments").insert({
+        plan_id: ctx.planId,
+        athlete_id: ids.athleteB,
+        start_date: "2026-02-01",
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("el coach SÍ puede asignar su plan a un atleta vinculado", async () => {
+      await admin.from("coach_athlete_relationships").insert({
+        coach_id: ids.coach,
+        athlete_id: ids.athleteB,
+        status: "active",
+      });
+
+      const { error } = await clientCoach.from("plan_assignments").insert({
+        plan_id: ctx.planId,
+        athlete_id: ids.athleteB,
+        start_date: "2026-02-01",
+      });
+      expect(error).toBeNull();
+    });
+
+    it("no puede haber dos asignaciones activas del mismo plan al mismo atleta", async () => {
+      const { error } = await clientCoach.from("plan_assignments").insert({
+        plan_id: ctx.planId,
+        athlete_id: ids.athleteA, // ya tiene una activa (beforeAll)
+        start_date: "2026-03-01",
+      });
+      expect(error).not.toBeNull(); // choca con idx_plan_assignments_active_unique
     });
   });
 }
