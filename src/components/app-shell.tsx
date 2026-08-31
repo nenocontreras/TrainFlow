@@ -8,6 +8,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { signOutAction } from "@/lib/actions/auth";
@@ -24,6 +25,7 @@ interface NavItem {
 const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   coach: [
     { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
+    { href: "/atletas", label: "Atletas", icon: Users },
     { href: "/planes", label: "Planes", icon: ListChecks },
     { href: "/ejercicios", label: "Ejercicios", icon: Dumbbell },
   ],
