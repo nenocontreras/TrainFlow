@@ -14,11 +14,11 @@ values
   ('00000000-0000-0000-0000-0000000c0ac4', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'coach@trainflow.test',
    crypt('password123', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Coach Demo"}', now(), now()),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Coach Demo","role":"coach"}', now(), now()),
   ('00000000-0000-0000-0000-00000a1b1e7e', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'athlete@trainflow.test',
    crypt('password123', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"Atleta Demo"}', now(), now());
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Atleta Demo","role":"athlete"}', now(), now());
 
 -- Identidades (necesario para login por email/password en versiones recientes)
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, created_at, updated_at)
