@@ -23,9 +23,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm build && pnpm start",
+    // En CI se construye y sirve. En local se asume `pnpm build` previo
+    // (evita reconstruir en cada corrida en máquinas lentas).
+    command: process.env.CI ? "pnpm build && pnpm start" : "pnpm start",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: process.env.CI ? 240_000 : 60_000,
   },
 });

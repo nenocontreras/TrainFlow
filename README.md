@@ -98,9 +98,25 @@ pnpm dev            # http://localhost:3000
 - Cada rama = un módulo funcional (sección 7 del SPEC) + su PR + al menos un test de
   la lógica de negocio.
 
+## Autenticación (Fase 1)
+
+- Registro/login con email + password (Supabase Auth). El registro elige rol
+  (`athlete` / `coach`); el trigger lo escribe en `profiles.role` (inmutable
+  después). Rutas: `/register`, `/login`, `/dashboard` (coach), `/hoy` (atleta).
+- `src/middleware.ts` refresca la sesión y protege las rutas de la app.
+- Sistema de diseño "Forge" aplicado (`src/app/globals.css`): base cálida,
+  acento lima volt, tipografía Archivo + Geist, claro/oscuro por sistema.
+
+> Recomendado en el proyecto Supabase: **Authentication → Email → "Confirm email"
+> OFF** (grupo cerrado; el enlace lo compartes tú). Con confirmación ON, el
+> registro pide confirmar antes de entrar.
+
 ## Estado
 
-Fase 0 (setup) completada. Siguiente: Fase 1 — Auth + perfiles + roles.
+- **Fase 0** (setup) — completada.
+- **Fase 1** (auth + perfiles + roles) — en `feat/phase-1-auth`.
+- Siguiente: Fase 2 — biblioteca de ejercicios + constructor de planes.
+
 Roadmap en la sección 13 del SPEC.
 
 ## Pendiente de configurar por el mantenedor (fuera del código)
@@ -110,3 +126,4 @@ Roadmap en la sección 13 del SPEC.
 - Activar el job `e2e` como bloqueante cuando exista el entorno de preview.
 - Personal Access Token de Supabase (`supabase login`) para `db:push` / `db:types`
   sin pasar la connection string a mano.
+- Desactivar "Confirm email" en el proyecto Supabase (ver arriba).
