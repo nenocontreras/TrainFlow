@@ -113,8 +113,14 @@ pnpm dev            # http://localhost:3000
 
 ## Coach: ejercicios y planes (Fase 2)
 
-- **Biblioteca de ejercicios** (`/ejercicios`): CRUD. No se puede borrar un
-  ejercicio que esté usado en algún plan.
+- **Biblioteca de ejercicios** (`/ejercicios`): 50 ejercicios base **de sistema**
+  (`coach_id NULL`, solo lectura para todos) clasificados por grupo muscular,
+  patrón de movimiento y equipamiento, con vídeo de técnica. Encima, cada coach
+  crea sus propios ejercicios (nombre, grupo, patrón, equipamiento, tempo,
+  instrucciones, URL de vídeo). Buscador + filtros. No se puede borrar un
+  ejercicio usado en algún plan.
+- Sembrar/actualizar la biblioteca base: `pnpm db:seed:exercises` (o
+  `supabase db query -f supabase/seed_exercises.sql --db-url …`). Es idempotente.
 - **Constructor de planes** (`/planes` → `/planes/nuevo` → `/planes/[planId]`):
   crear plan, añadir días, añadir ejercicios por día desde la biblioteca con
   series/reps/descanso/nota. Reordenar (subir/bajar), renombrar, eliminar.
@@ -122,11 +128,21 @@ pnpm dev            # http://localhost:3000
   haría cascade sobre sesiones ya registradas).
 - Lógica de orden en `src/lib/ordering.ts` (helpers puros con test).
 
+## Layout
+
+- **Móvil**: contenedor compacto tipo PWA, top bar mínima y navegación inferior
+  táctil.
+- **Escritorio (`lg:`)**: sidebar lateral fijo, contenido a ancho de dashboard
+  (`max-w-5xl`), y el editor de planes en 2 columnas (catálogo de ejercicios a la
+  izquierda, plan en edición a la derecha).
+- `src/components/app-shell.tsx` es el marco común de coach y atleta.
+
 ## Estado
 
 - **Fase 0** (setup) — completada · `chore/phase-0-setup`.
 - **Fase 1** (auth + perfiles + roles) — completada · `feat/phase-1-auth`.
 - **Fase 2** (ejercicios + planes) — completada · `feat/phase-2-plans`.
+- **Mejoras** (biblioteca base + layout responsive) — `feat/exercise-library-and-responsive`.
 - Siguiente: Fase 3 — asignación de planes + vista "Hoy" del atleta.
 
 Roadmap en la sección 13 del SPEC.
@@ -137,5 +153,7 @@ Roadmap en la sección 13 del SPEC.
 - Conectar el proyecto a Vercel y replicar las env vars en Production.
 - Activar el job `e2e` como bloqueante cuando exista el entorno de preview.
 - Personal Access Token de Supabase (`supabase login`) para `db:push` / `db:types`
-  sin pasar la connection string a mano.
+  / `db:seed:exercises` sin pasar la connection string a mano.
 - Desactivar "Confirm email" en el proyecto Supabase (ver arriba).
+- Revisar/sustituir las URLs de vídeo de los 50 ejercicios base (ahora son
+  búsquedas de YouTube de la técnica) por enlaces canónicos si se prefiere.
