@@ -6,10 +6,12 @@ const baseURL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: "./tests/e2e",
   globalSetup: "./tests/e2e/global-setup.ts",
-  fullyParallel: true,
+  // 1 worker: los specs comparten los usuarios e2e (coach/atleta) y su data en
+  // Supabase; correr en paralelo hace que un test borre los datos de otro.
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 2 : 1,
+  workers: 1,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL,

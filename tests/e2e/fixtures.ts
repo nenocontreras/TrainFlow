@@ -18,7 +18,7 @@ export function adminClient() {
   });
 }
 
-async function findUserId(email: string): Promise<string | undefined> {
+async function userIdByEmail(email: string): Promise<string | undefined> {
   const admin = adminClient();
   const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
   return data?.users?.find((u) => u.email === email)?.id;
@@ -44,12 +44,26 @@ export async function ensureE2EUsers(): Promise<void> {
   }
 }
 
-/** Borra planes y ejercicios del coach e2e para que cada corrida empiece limpia. */
+/**
+ * Deja a los usuarios e2e sin datos para que cada corrida empiece limpia.
+ * Orden importante: `workout_sessions.plan_day_id` NO tiene `on delete cascade`,
+ * así que hay que borrar las sesiones del atleta antes que los planes del coach.
+ */
 export async function resetE2ECoachData(): Promise<void> {
   if (!E2E_READY) return;
-  const coachId = await findUserId(E2E_USERS.coach);
-  if (!coachId) return;
   const admin = adminClient();
-  await admin.from("training_plans").delete().eq("coach_id", coachId);
-  await admin.from("exercise_library").delete().eq("coach_id", coachId);
+  const [coachId, athleteId] = await Promise.all([
+    userIdByEmail(E2E_USERS.coach),
+    userIdByEmail(E2E_USERS.athlete),
+  ]);
+
+  if (athleteId) {
+    await admin.from("workout_sessions").delete().eq("athlete_id", athleteId);
+    await admin.from("plan_assignments").delete().eq("athlete_id", athleteId);
+  }
+  if (coachId) {
+    await admin.from("training_plans").delete().eq("coach_id", coachId);
+    await admin.from("exercise_library").delete().eq("coach_id", coachId);
+    await admin.from("coach_athlete_relationships").delete().eq("coach_id", coachId);
+  }
 }
