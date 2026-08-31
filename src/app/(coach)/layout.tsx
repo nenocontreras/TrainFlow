@@ -1,14 +1,7 @@
 import { requireRole } from "@/lib/auth";
-import { AppHeader } from "@/components/app-header";
-import { CoachNav } from "@/components/coach-nav";
+import { AppShell } from "@/components/app-shell";
 
 export default async function CoachLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireRole("coach");
-  return (
-    <div className="flex min-h-dvh flex-col">
-      <AppHeader fullName={profile.full_name} role="coach" />
-      <CoachNav />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">{children}</main>
-    </div>
-  );
+  return <AppShell user={{ fullName: profile.full_name, role: "coach" }}>{children}</AppShell>;
 }

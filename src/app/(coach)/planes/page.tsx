@@ -28,12 +28,12 @@ export default async function PlansPage() {
           Todavía no has creado ningún plan.
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:gap-3">
           {plans.map((plan) => (
             <li key={plan.id}>
               <Link
                 href={`/planes/${plan.id}`}
-                className="bg-card hover:border-primary/50 block rounded-lg border p-3 transition-colors"
+                className="bg-card hover:border-primary/50 block h-full rounded-lg border p-3 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{plan.name}</span>

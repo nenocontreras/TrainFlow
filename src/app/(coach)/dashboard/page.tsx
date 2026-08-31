@@ -21,7 +21,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:max-w-md">
         <Link href="/planes" className="bg-card rounded-lg border p-4">
           <p className="text-3xl font-bold tabular-nums">{plans.length}</p>
           <p className="text-muted-foreground text-sm">{plans.length === 1 ? "plan" : "planes"}</p>
