@@ -111,11 +111,23 @@ pnpm dev            # http://localhost:3000
 > OFF** (grupo cerrado; el enlace lo compartes tú). Con confirmación ON, el
 > registro pide confirmar antes de entrar.
 
+## Coach: ejercicios y planes (Fase 2)
+
+- **Biblioteca de ejercicios** (`/ejercicios`): CRUD. No se puede borrar un
+  ejercicio que esté usado en algún plan.
+- **Constructor de planes** (`/planes` → `/planes/nuevo` → `/planes/[planId]`):
+  crear plan, añadir días, añadir ejercicios por día desde la biblioteca con
+  series/reps/descanso/nota. Reordenar (subir/bajar), renombrar, eliminar.
+- Archivar plan siempre; **eliminar** solo si no tiene atletas asignados (borrarlo
+  haría cascade sobre sesiones ya registradas).
+- Lógica de orden en `src/lib/ordering.ts` (helpers puros con test).
+
 ## Estado
 
-- **Fase 0** (setup) — completada.
-- **Fase 1** (auth + perfiles + roles) — en `feat/phase-1-auth`.
-- Siguiente: Fase 2 — biblioteca de ejercicios + constructor de planes.
+- **Fase 0** (setup) — completada · `chore/phase-0-setup`.
+- **Fase 1** (auth + perfiles + roles) — completada · `feat/phase-1-auth`.
+- **Fase 2** (ejercicios + planes) — completada · `feat/phase-2-plans`.
+- Siguiente: Fase 3 — asignación de planes + vista "Hoy" del atleta.
 
 Roadmap en la sección 13 del SPEC.
 
