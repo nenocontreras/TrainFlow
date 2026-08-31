@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Type-check · Unit (RLS) · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Supabase (local)
+        run: pnpm supabase start -x studio,inbucket,imgproxy,edge-runtime,logflare,vector
+
+      - name: Reset DB (aplica migraciones + seed)
+        run: pnpm supabase db reset
+
+      - name: Export Supabase env vars
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=$(pnpm -s supabase status -o env | grep API_URL | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(pnpm -s supabase status -o env | grep ANON_KEY | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(pnpm -s supabase status -o env | grep SERVICE_ROLE_KEY | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+
+      - name: Generate DB types
+        run: pnpm db:types
+
+      - name: Prettier
+        run: pnpm format:check
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Type-check
+        run: pnpm type-check
+
+      - name: Unit tests (incluye prueba de aislamiento RLS)
+        run: pnpm test:unit
+
+      - name: Build
+        run: pnpm build
+
+      - name: Stop Supabase
+        if: always()
+        run: pnpm supabase stop
+
+  e2e:
+    name: E2E (Playwright)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Start Supabase (local)
+        run: pnpm supabase start -x studio,inbucket,imgproxy,edge-runtime,logflare,vector
+      - name: Reset DB
+        run: pnpm supabase db reset
+      - name: Export Supabase env vars
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=$(pnpm -s supabase status -o env | grep API_URL | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(pnpm -s supabase status -o env | grep ANON_KEY | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(pnpm -s supabase status -o env | grep SERVICE_ROLE_KEY | cut -d'=' -f2- | tr -d '"')" >> "$GITHUB_ENV"
+      - name: Generate DB types
+        run: pnpm db:types
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run E2E
+        run: pnpm test:e2e
+      - name: Stop Supabase
+        if: always()
+        run: pnpm supabase stop

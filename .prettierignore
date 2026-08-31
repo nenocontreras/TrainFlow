@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+src/lib/supabase/types.ts
+supabase/.temp
+
+# Documentos de producto: se mantienen tal cual los escribió el autor.
+TrainFlow_SPEC.md
+TrainFlow_PROMPT.md
