@@ -4,31 +4,57 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { getAthlete } from "@/lib/queries/athletes";
 import { assignablePlans, listAssignmentsForAthlete } from "@/lib/queries/assignments";
+import {
+  getAthleteRecentSessions,
+  getExerciseLoadSeries,
+  listTrackedExercises,
+} from "@/lib/queries/coach";
 import { unassignPlanAction } from "@/lib/actions/assignments";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProgressPanel } from "@/components/progress-panel";
 import { AssignPlanDialog } from "./assign-plan-dialog";
 
 export const metadata: Metadata = { title: "Atleta" };
 
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("es", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export default async function AthleteDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ athleteId: string }>;
+  searchParams: Promise<{ ej?: string }>;
 }) {
   await requireRole("coach");
   const { athleteId } = await params;
+  const { ej } = await searchParams;
 
   const athlete = await getAthlete(athleteId);
   if (!athlete) notFound();
 
-  const [assignments, plans] = await Promise.all([
+  const [assignments, plans, sessions, trackedExercises] = await Promise.all([
     listAssignmentsForAthlete(athleteId),
     assignablePlans(athleteId),
+    getAthleteRecentSessions(athleteId),
+    listTrackedExercises(athleteId),
   ]);
 
+  const selectedExerciseId =
+    ej && trackedExercises.some((e) => e.id === ej) ? ej : (trackedExercises[0]?.id ?? null);
+  const loadSeries = selectedExerciseId
+    ? await getExerciseLoadSeries(athleteId, selectedExerciseId)
+    : [];
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <Link href="/atletas" className="text-muted-foreground text-sm underline">
         ← Atletas
       </Link>
@@ -38,6 +64,7 @@ export default async function AthleteDetailPage({
         <AssignPlanDialog athleteId={athleteId} plans={plans} />
       </div>
 
+      {/* Planes asignados */}
       <section className="flex flex-col gap-2">
         <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           Planes asignados
@@ -75,6 +102,53 @@ export default async function AthleteDetailPage({
                       Finalizar
                     </Button>
                   </form>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Progresión de carga */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          Progresión de carga
+        </h2>
+        {trackedExercises.length === 0 ? (
+          <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+            Cuando el atleta registre series con peso, aquí verás su 1RM estimado por sesión.
+          </p>
+        ) : (
+          <ProgressPanel
+            exercises={trackedExercises}
+            selectedId={selectedExerciseId ?? trackedExercises[0]!.id}
+            points={loadSeries}
+          />
+        )}
+      </section>
+
+      {/* Actividad reciente */}
+      <section className="flex flex-col gap-2">
+        <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          Actividad reciente
+        </h2>
+        {sessions.length === 0 ? (
+          <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+            El atleta todavía no ha registrado ningún entrenamiento.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {sessions.map((s) => (
+              <li key={s.id} className="bg-card rounded-lg border p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium capitalize">{formatDate(s.performedAt)}</span>
+                  {s.dayLabel ? <Badge variant="secondary">{s.dayLabel}</Badge> : null}
+                  <span className="text-muted-foreground text-sm tabular-nums">
+                    {s.setsDone}/{s.setsTotal} series
+                  </span>
+                </div>
+                {s.athleteNote ? (
+                  <p className="text-muted-foreground mt-1 text-sm">{s.athleteNote}</p>
                 ) : null}
               </li>
             ))}
