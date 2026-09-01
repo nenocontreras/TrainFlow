@@ -30,9 +30,9 @@ export async function startSessionAction(
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  // Una sesión por día y asignación. (Sin índice único: se comprueba aquí; el
-  // botón queda deshabilitado mientras se envía. Endurecer con un índice parcial
-  // sobre (plan_assignment_id, performed_at::date) es deuda anotada.)
+  // Una sesión por día y asignación: la garantiza el índice único
+  // idx_workout_sessions_one_per_day (migración 0009). Esta comprobación previa
+  // evita el error genérico en el caso normal (el atleta ya entrenó hoy).
   const { data: existing } = await supabase
     .from("workout_sessions")
     .select("id")
@@ -49,7 +49,7 @@ export async function startSessionAction(
   // vacío, no dejamos una sesión sin series que el atleta no puede registrar.
   const { data: exercises, error: exError } = await supabase
     .from("plan_exercises")
-    .select("id, target_sets, exercise_order")
+    .select("id, exercise_id, target_sets, exercise_order")
     .eq("plan_day_id", parsed.data.planDayId)
     .order("exercise_order", { ascending: true });
   if (exError) return { error: "No se pudieron cargar los ejercicios del día." };
@@ -66,12 +66,20 @@ export async function startSessionAction(
     })
     .select("id")
     .single();
-  if (error || !session) return { error: "No se pudo empezar la sesión." };
+  if (error || !session) {
+    // Carrera con el índice único: alguien creó la sesión de hoy entre medias.
+    if (error?.code === "23505") {
+      revalidateSession();
+      return { ok: true };
+    }
+    return { error: "No se pudo empezar la sesión." };
+  }
 
   const rows = exercises.flatMap((ex) =>
     Array.from({ length: Math.max(1, ex.target_sets) }, (_, i) => ({
       workout_session_id: session.id,
       plan_exercise_id: ex.id,
+      exercise_id: ex.exercise_id,
       set_number: i + 1,
       completed: false,
     })),

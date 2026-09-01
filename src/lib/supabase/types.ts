@@ -273,6 +273,7 @@ export type Database = {
           actual_reps: number | null
           actual_weight_kg: number | null
           completed: boolean | null
+          exercise_id: string | null
           id: string
           plan_exercise_id: string | null
           set_number: number
@@ -282,6 +283,7 @@ export type Database = {
           actual_reps?: number | null
           actual_weight_kg?: number | null
           completed?: boolean | null
+          exercise_id?: string | null
           id?: string
           plan_exercise_id?: string | null
           set_number: number
@@ -291,12 +293,20 @@ export type Database = {
           actual_reps?: number | null
           actual_weight_kg?: number | null
           completed?: boolean | null
+          exercise_id?: string | null
           id?: string
           plan_exercise_id?: string | null
           set_number?: number
           workout_session_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "session_sets_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_library"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "session_sets_plan_exercise_id_fkey"
             columns: ["plan_exercise_id"]
@@ -357,6 +367,7 @@ export type Database = {
           athlete_note: string | null
           id: string
           performed_at: string | null
+          performed_on: string | null
           plan_assignment_id: string | null
           plan_day_id: string | null
         }
@@ -365,6 +376,7 @@ export type Database = {
           athlete_note?: string | null
           id?: string
           performed_at?: string | null
+          performed_on?: string | null
           plan_assignment_id?: string | null
           plan_day_id?: string | null
         }
@@ -373,6 +385,7 @@ export type Database = {
           athlete_note?: string | null
           id?: string
           performed_at?: string | null
+          performed_on?: string | null
           plan_assignment_id?: string | null
           plan_day_id?: string | null
         }
