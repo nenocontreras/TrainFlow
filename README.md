@@ -142,6 +142,32 @@ pnpm dev            # http://localhost:3000
   (`useOptimistic`). Nota final. Descartar sesión.
 - **Historial** (`/historial`): sesiones pasadas con fecha, día y series completadas.
 
+## Panel del coach y progreso (Fase 4)
+
+- **Panel** (`/dashboard`): sección "Actividad de atletas" — por cada atleta,
+  recencia de la última sesión, sesiones en los últimos 7 y 30 días y % de
+  series completadas. El modelo "día de hoy" es rotación por progreso (sin
+  calendario semanal), así que la adherencia no compara contra un objetivo
+  inventado.
+- **Ficha del atleta** (`/atletas/[id]`):
+  - **Progresión de carga** — selector de ejercicio (sincronizado con `?ej=`) +
+    gráfica (Recharts) del **1RM estimado** (Epley: `peso · (1 + reps/30)`) de la
+    mejor serie de cada sesión. Necesita ≥ 2 sesiones en días distintos para
+    dibujar la línea.
+  - **Actividad reciente** — últimas ~12 sesiones con día, series y nota.
+- Lógica pura en `src/lib/progress.ts` (`estimatedOneRepMax`, `bestSetOf`,
+  `buildLoadSeries`, `adherenceStats`), con test en `tests/unit/progress.test.ts`.
+- **Migración 0009**: `workout_sessions.plan_day_id` y
+  `session_sets.plan_exercise_id` pasan a `on delete set null` (editar un plan ya
+  entrenado ya no rompe el historial); columna generada `performed_on` (fecha
+  UTC) + índice único `(plan_assignment_id, performed_on)` → una sesión por día y
+  asignación garantizada en BD.
+- **Migración 0010**: `session_sets.exercise_id` — instantánea del ejercicio de
+  biblioteca al registrar la serie. Así la gráfica de progreso sigue mostrando el
+  histórico aunque el coach borre después ese ejercicio del plan (0009 dejaría
+  `plan_exercise_id` en null). `startSessionAction` lo escribe al pre-crear las
+  series; las consultas del coach lo leen directamente.
+
 ## Layout
 
 - **Móvil**: contenedor compacto tipo PWA, top bar mínima y navegación inferior
@@ -158,7 +184,8 @@ pnpm dev            # http://localhost:3000
 - **Fase 2** (ejercicios + planes) — completada · `feat/phase-2-plans`.
 - **Mejoras** (biblioteca base + layout responsive) — `feat/exercise-library-and-responsive`.
 - **Fase 3** (asignación + "Hoy" + historial) — `feat/phase-3-assignment-today`.
-- Siguiente: Fase 4 — dashboard del coach + gráficas de adherencia y progreso.
+- **Fase 4** (panel del coach + progreso + gráficas) — `feat/phase-4-coach-dashboard`.
+- Siguiente: Fase 5 — PWA (manifest, service worker, instalabilidad, offline).
 
 Roadmap en la sección 13 del SPEC.
 
@@ -176,15 +203,12 @@ Roadmap en la sección 13 del SPEC.
 
 ## Deuda técnica anotada
 
-Para una migración de endurecimiento en la Fase 4:
-
-- `workout_sessions.plan_day_id` y `session_sets.plan_exercise_id` no tienen
-  `on delete` → borrar un día/ejercicio de un plan **ya entrenado** falla con
-  error de FK en vez de conservar el historial con la referencia a `null`
-  (`on delete set null`).
-- No hay índice único que garantice **una sesión por día y asignación** — hoy
-  solo lo comprueba `startSessionAction` (con el botón deshabilitado durante el
-  envío). Falta un índice parcial sobre `(plan_assignment_id, performed_at::date)`.
 - Los helpers `SECURITY DEFINER` siguen siendo ejecutables por `authenticated`
   vía `/rest/v1/rpc/*` (advisor WARN). No hay leak (devuelven booleanos scoped a
-  `auth.uid()`), pero moverlos a un esquema `private` sería lo correcto.
+  `auth.uid()`), pero moverlos a un esquema `private` sería lo correcto. Es una
+  migración que toca **todas** las políticas que los invocan, así que se hará
+  aislada, con `pnpm test:rls` antes y después.
+- Activar "Leaked password protection" en Supabase Authentication (advisor WARN).
+
+Resuelto en la Fase 4 (migración 0009): FK del historial con `on delete set null`
+e índice único de una sesión por día y asignación.
