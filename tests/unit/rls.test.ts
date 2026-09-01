@@ -165,6 +165,56 @@ function describeRlsSuite(): void {
       expect(set.error).toBeNull();
     });
 
+    it("no puede haber dos sesiones el mismo día para la misma asignación", async () => {
+      // La primera sesión se creó en el test anterior (hoy). Una segunda choca
+      // con idx_workout_sessions_one_per_day (migración 0009).
+      const { error } = await clientA.from("workout_sessions").insert({
+        plan_assignment_id: ctx.assignmentAId,
+        plan_day_id: ctx.planDayId,
+        athlete_id: ids.athleteA,
+      });
+      expect(error?.code).toBe("23505");
+    });
+
+    it("SÍ puede haber otra sesión de la misma asignación en OTRO día", async () => {
+      // El índice es por (asignación, fecha): una sesión pasada no bloquea.
+      const { data, error } = await clientA
+        .from("workout_sessions")
+        .insert({
+          plan_assignment_id: ctx.assignmentAId,
+          plan_day_id: ctx.planDayId,
+          athlete_id: ids.athleteA,
+          performed_at: "2025-12-01T09:00:00Z",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+      if (data?.id) await admin.from("workout_sessions").delete().eq("id", data.id);
+    });
+
+    it("el coach SÍ puede leer las series de su atleta (gráfica de progreso)", async () => {
+      const { data, error } = await clientCoach
+        .from("session_sets")
+        .select("id, actual_weight_kg, completed");
+      expect(error).toBeNull();
+      expect((data ?? []).length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("el coach NO puede escribir en session_sets (solo lectura, SPEC §6.3)", async () => {
+      const { data: updated } = await clientCoach
+        .from("session_sets")
+        .update({ actual_weight_kg: 999 })
+        .eq("workout_session_id", ctx.sessionAId)
+        .select("id");
+      expect(updated ?? []).toHaveLength(0);
+
+      const { error: insErr } = await clientCoach.from("session_sets").insert({
+        workout_session_id: ctx.sessionAId,
+        set_number: 99,
+      });
+      expect(insErr).not.toBeNull();
+    });
+
     it("el atleta B NO puede leer las sesiones del atleta A", async () => {
       const { data, error } = await clientB.from("workout_sessions").select("id");
       expect(error).toBeNull();
@@ -279,6 +329,35 @@ function describeRlsSuite(): void {
         start_date: "2026-03-01",
       });
       expect(error).not.toBeNull(); // choca con idx_plan_assignments_active_unique
+    });
+
+    // --- Fase 4: on delete set null en el historial (migración 0009) --------
+    // Este bloque borra ctx.planDayId — debe ir el último.
+
+    it("el coach borra un día ya entrenado y la sesión sobrevive con plan_day_id NULL", async () => {
+      const del = await clientCoach.from("plan_days").delete().eq("id", ctx.planDayId).select("id");
+      expect(del.error).toBeNull();
+      expect(del.data ?? []).toHaveLength(1); // antes de 0009 fallaba por FK
+
+      // La sesión histórica del atleta A sigue ahí, con la referencia a null.
+      const { data } = await clientA
+        .from("workout_sessions")
+        .select("id, plan_day_id")
+        .eq("id", ctx.sessionAId)
+        .maybeSingle();
+      expect(data?.id).toBe(ctx.sessionAId);
+      expect(data?.plan_day_id).toBeNull();
+
+      // El aislamiento no se relaja: B sigue sin poder leerla.
+      const bView = await clientB.from("workout_sessions").select("id").eq("id", ctx.sessionAId);
+      expect(bView.data ?? []).toHaveLength(0);
+
+      // El coach mantiene su lectura de solo lectura.
+      const coachView = await clientCoach
+        .from("workout_sessions")
+        .select("id")
+        .eq("id", ctx.sessionAId);
+      expect(coachView.data ?? []).toHaveLength(1);
     });
   });
 }

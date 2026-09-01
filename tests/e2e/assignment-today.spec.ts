@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { E2E_PASSWORD, E2E_READY, E2E_USERS } from "./fixtures";
 
-test.describe("Fase 3: asignación y vista Hoy", () => {
+test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
   test.skip(!E2E_READY, "requiere credenciales de Supabase");
 
   const run = String(Date.now()).slice(-6);
@@ -96,5 +96,26 @@ test.describe("Fase 3: asignación y vista Hoy", () => {
     await page.goto("/historial");
     await expect(page.getByText(`Día 1 ${run}`)).toBeVisible();
     await expect(page.getByText("Test e2e")).toBeVisible();
+
+    // --- Coach: panel de progreso del atleta (Fase 4) --------------------
+    await logout(page);
+    await login(page, E2E_USERS.coach);
+    await expect(page).toHaveURL(/\/dashboard$/);
+    // el panel muestra actividad reciente del atleta
+    await expect(page.getByText("Actividad de atletas")).toBeVisible();
+
+    await page.goto("/atletas");
+    await page.getByRole("link", { name: /E2E athlete/ }).click();
+    await expect(page).toHaveURL(/\/atletas\/[0-9a-f-]+/);
+
+    // sección de progresión con el ejercicio registrado disponible
+    await expect(page.getByRole("heading", { name: "Progresión de carga" })).toBeVisible();
+    await expect(page.getByLabel("Ejercicio").locator("option", { hasText: exName })).toHaveCount(
+      1,
+    );
+
+    // actividad reciente refleja la serie completada
+    await expect(page.getByText(`Día 1 ${run}`)).toBeVisible();
+    await expect(page.getByText(/1\/\d+ series/)).toBeVisible();
   });
 });
