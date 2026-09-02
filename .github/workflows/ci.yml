@@ -17,9 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # La versión de pnpm sale de "packageManager" en package.json.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
@@ -30,7 +29,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Start Supabase (local)
-        run: pnpm supabase start -x studio,inbucket,imgproxy,edge-runtime,logflare,vector
+        run: pnpm supabase start -x studio,mailpit,imgproxy,edge-runtime,logflare,vector
 
       - name: Reset DB (aplica migraciones + seed)
         run: pnpm supabase db reset
@@ -70,8 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -79,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Start Supabase (local)
-        run: pnpm supabase start -x studio,inbucket,imgproxy,edge-runtime,logflare,vector
+        run: pnpm supabase start -x studio,mailpit,imgproxy,edge-runtime,logflare,vector
       - name: Reset DB
         run: pnpm supabase db reset
       - name: Export Supabase env vars
