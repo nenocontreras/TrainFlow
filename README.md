@@ -168,6 +168,25 @@ pnpm dev            # http://localhost:3000
   `plan_exercise_id` en null). `startSessionAction` lo escribe al pre-crear las
   series; las consultas del coach lo leen directamente.
 
+## PWA (Fase 5)
+
+- **Service worker** con [Serwist](https://serwist.pages.dev) (`@serwist/next`):
+  precache del app-shell y de las rutas estáticas, runtime caching
+  (`defaultCache`), y `NetworkOnly` forzado para el origen de Supabase (Auth y
+  PostgREST nunca se sirven de caché). Solo activo en producción (`pnpm build` +
+  `pnpm start`), desactivado en `pnpm dev`.
+- **Offline**: la vista "Hoy" y demás páginas ya visitadas se sirven de caché sin
+  conexión (NetworkFirst); una navegación a algo no cacheado cae a
+  [`/sin-conexion`](src/app/sin-conexion/page.tsx). Un banner
+  (`src/components/offline-banner.tsx`) avisa; el registro de series espera a que
+  vuelva la red (sin cola de sincronización — decisión, ver "Pendiente").
+- **Instalable**: `src/app/manifest.ts` (íconos 192/512 + maskable, shortcuts,
+  `standalone`), `appleWebApp` en el layout, y un botón "Instalar app"
+  (`src/components/install-button.tsx`) que usa `beforeinstallprompt`.
+- **Íconos**: `pnpm pwa:icons` los regenera a `public/icons/` desde
+  `scripts/generate-pwa-icons.mjs` (rayo volt sobre carbón, colores del sistema
+  "Forge"). `public/sw.js` se compila en cada build y está git-ignorado.
+
 ## Layout
 
 - **Móvil**: contenedor compacto tipo PWA, top bar mínima y navegación inferior
@@ -185,7 +204,9 @@ pnpm dev            # http://localhost:3000
 - **Mejoras** (biblioteca base + layout responsive) — `feat/exercise-library-and-responsive`.
 - **Fase 3** (asignación + "Hoy" + historial) — `feat/phase-3-assignment-today`.
 - **Fase 4** (panel del coach + progreso + gráficas) — `feat/phase-4-coach-dashboard`.
-- Siguiente: Fase 5 — PWA (manifest, service worker, instalabilidad, offline).
+- **Fase 5** (PWA: manifest, service worker, instalable, offline) — `feat/phase-5-pwa`.
+- MVP funcionalmente completo. Pendiente: verificación en dispositivo real
+  (instalación + Lighthouse ≥ 90) y despliegue.
 
 Roadmap en la sección 13 del SPEC.
 
@@ -197,9 +218,16 @@ Roadmap en la sección 13 del SPEC.
 - Personal Access Token de Supabase (`supabase login`) para `db:push` / `db:types`
   / `db:seed:exercises` sin pasar la connection string a mano.
 - Desactivar "Confirm email" en el proyecto Supabase (ver arriba).
-- Activar "Leaked password protection" en Authentication (advisor de Supabase).
+- Activar "Leaked password protection" en Authentication (advisor de Supabase) —
+  **requiere plan de pago**; pendiente hasta escalar (ver "Deuda técnica").
 - Revisar/sustituir las URLs de vídeo de los 50 ejercicios base (ahora son
   búsquedas de YouTube de la técnica) por enlaces canónicos si se prefiere.
+- **Fase 5 / DoD §14**: instalar la PWA en un Android real (Chrome → "Añadir a
+  pantalla de inicio") y pasar Lighthouse (`npx lighthouse <url> --view` o
+  DevTools → Lighthouse) confirmando PWA + Performance ≥ 90 en el build
+  desplegado, no en `localhost`.
+- Sustituir el rayo de los íconos por el logo definitivo si se diseña uno
+  (`pnpm pwa:icons` tras editar el SVG del script).
 
 ## Deuda técnica anotada
 
@@ -208,7 +236,13 @@ Roadmap en la sección 13 del SPEC.
   `auth.uid()`), pero moverlos a un esquema `private` sería lo correcto. Es una
   migración que toca **todas** las políticas que los invocan, así que se hará
   aislada, con `pnpm test:rls` antes y después.
-- Activar "Leaked password protection" en Supabase Authentication (advisor WARN).
+- Activar "Leaked password protection" en Supabase Authentication (advisor WARN)
+  — bloqueado por el plan free de Supabase; recordatorio para cuando se escale a
+  un plan de pago / se profesionalice la app.
+- **Offline de escritura**: hoy el registro de series necesita conexión. Una cola
+  en IndexedDB que reencole las series marcadas sin señal y las sincronice al
+  reconectar (SPEC §9, "evaluar en Fase PWA") queda pendiente — necesita manejo
+  de reintentos y conflictos; el uso normal es con conexión.
 
 Resuelto en la Fase 4 (migración 0009): FK del historial con `on delete set null`
 e índice único de una sesión por día y asignación.
