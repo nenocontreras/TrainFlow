@@ -36,6 +36,7 @@ test.describe("constructor de planes (coach)", () => {
   }
 
   test("crea un plan con 2 días y 3 ejercicios por día (DoD §14)", async ({ page }) => {
+    test.setTimeout(120_000); // 3 ejercicios + plan + 2 días + 6 altas, máquina lenta
     await login(page);
 
     for (const name of EXERCISES) await createExercise(page, name);

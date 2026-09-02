@@ -13,6 +13,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 1,
   workers: 1,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
+  // Máquina de desarrollo lenta: las server actions pueden tardar > 5 s.
+  expect: { timeout: 10_000 },
   use: {
     baseURL,
     trace: "on-first-retry",
