@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { signOutAction } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
+import { OfflineBanner } from "@/components/offline-banner";
+import { InstallButton } from "@/components/install-button";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
 
@@ -53,6 +55,7 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
+      <OfflineBanner />
       {/* Sidebar — desktop */}
       <aside className="bg-card sticky top-0 hidden h-dvh flex-col border-r lg:flex">
         <div className="flex h-14 items-center px-5">
@@ -75,10 +78,13 @@ export function AppShell({
             </Link>
           ))}
         </nav>
-        <div className="border-t p-3">
-          <p className="truncate px-3 text-sm font-medium">{user.fullName}</p>
-          <p className="text-muted-foreground px-3 text-xs">{ROLE_LABEL[user.role]}</p>
-          <form action={signOutAction} className="mt-2">
+        <div className="flex flex-col gap-2 border-t p-3">
+          <div>
+            <p className="truncate px-3 text-sm font-medium">{user.fullName}</p>
+            <p className="text-muted-foreground px-3 text-xs">{ROLE_LABEL[user.role]}</p>
+          </div>
+          <InstallButton className="mx-3 w-fit" />
+          <form action={signOutAction}>
             <Button type="submit" variant="ghost" size="sm" className="w-full justify-start px-3">
               Cerrar sesión
             </Button>
@@ -89,11 +95,14 @@ export function AppShell({
       {/* Top bar — mobile */}
       <header className="bg-background/80 sticky top-0 z-20 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
         <span className="font-display text-lg font-extrabold tracking-tight">TrainFlow</span>
-        <form action={signOutAction}>
-          <Button type="submit" variant="ghost" size="sm">
-            Salir
-          </Button>
-        </form>
+        <div className="flex items-center gap-1">
+          <InstallButton />
+          <form action={signOutAction}>
+            <Button type="submit" variant="ghost" size="sm">
+              Salir
+            </Button>
+          </form>
+        </div>
       </header>
 
       <div className="flex min-w-0 flex-col">

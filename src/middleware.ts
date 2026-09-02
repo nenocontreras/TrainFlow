@@ -41,8 +41,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Excluye assets estáticos y el manifest.
+  // Excluye assets estáticos, el manifest y el service worker de Serwist.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|swe-worker-.*\\.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

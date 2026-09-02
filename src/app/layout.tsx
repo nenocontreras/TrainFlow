@@ -27,6 +27,12 @@ export const metadata: Metadata = {
   },
   description: "Coaching de entrenamiento físico: planes, ejecución y progreso.",
   applicationName: "TrainFlow",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TrainFlow",
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

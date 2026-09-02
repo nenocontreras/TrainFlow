@@ -47,6 +47,9 @@ const eslintConfig = [
       "next-env.d.ts",
       "src/lib/supabase/types.ts", // generado por `supabase gen types`
       "supabase/**",
+      "scripts/**", // utilidades de build/tooling en Node plano
+      "public/sw.js", // service worker compilado por Serwist
+      "public/swe-worker-*.js", // helper del SW compilado por Serwist
     ],
   },
 ];
