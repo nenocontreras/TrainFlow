@@ -8,6 +8,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  MessageCircle,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -28,11 +29,13 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   coach: [
     { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
     { href: "/atletas", label: "Atletas", icon: Users },
+    { href: "/mensajes", label: "Mensajes", icon: MessageCircle },
     { href: "/planes", label: "Planes", icon: ListChecks },
     { href: "/ejercicios", label: "Ejercicios", icon: Dumbbell },
   ],
   athlete: [
     { href: "/hoy", label: "Hoy", icon: CalendarDays },
+    { href: "/coach", label: "Coach", icon: MessageCircle },
     { href: "/historial", label: "Historial", icon: History },
   ],
 };

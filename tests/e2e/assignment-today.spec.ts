@@ -121,5 +121,20 @@ test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
     // actividad reciente refleja la serie completada
     await expect(page.getByText(`Día 1 ${run}`)).toBeVisible();
     await expect(page.getByText(/1\/\d+ series/)).toBeVisible();
+
+    // --- Coach: buzón de mensajes -> escribe al atleta -------------------
+    await page.goto("/mensajes");
+    await page.getByRole("link", { name: /E2E athlete/ }).click();
+    await expect(page).toHaveURL(/\/mensajes\/[0-9a-f-]+/);
+    const note = `Buen trabajo ${run}`;
+    await page.getByLabel("Mensaje").fill(note);
+    await page.getByRole("button", { name: "Enviar" }).click();
+    await expect(page.getByText(note)).toBeVisible();
+
+    // --- Atleta: ve el mensaje del coach --------------------------------
+    await logout(page);
+    await login(page, E2E_USERS.athlete);
+    await page.goto("/coach");
+    await expect(page.getByText(note)).toBeVisible();
   });
 });

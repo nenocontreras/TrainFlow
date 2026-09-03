@@ -7,7 +7,9 @@ const PROTECTED_PREFIXES = [
   "/planes",
   "/ejercicios",
   "/atletas",
+  "/mensajes",
   "/hoy",
+  "/coach",
   "/historial",
   "/plan",
 ];
