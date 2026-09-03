@@ -1,8 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { E2E_PASSWORD, E2E_READY, E2E_USERS } from "./fixtures";
+import { E2E_PASSWORD, E2E_READY, E2E_USERS, resetE2ECoachData } from "./fixtures";
 
 test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
   test.skip(!E2E_READY, "requiere credenciales de Supabase");
+
+  // Datos limpios en cada intento (incluidos los reintentos): este flujo crea
+  // sesión + mensajes y un reintento sobre datos sucios rompía en cascada.
+  test.beforeEach(async () => {
+    await resetE2ECoachData();
+  });
 
   const run = String(Date.now()).slice(-6);
 
@@ -73,19 +79,23 @@ test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
     await expect(page).toHaveURL(/\/hoy$/);
     await expect(page.getByRole("heading", { name: "Hoy te toca" })).toBeVisible();
 
-    await page.getByRole("button", { name: new RegExp(`Empezar Día 1 ${run}`) }).click();
-    await expect(page.getByText(/0 \/ \d+ series/)).toBeVisible();
+    // HomeToday: la tarjeta de hoy con el ejercicio y el botón de empezar
+    await expect(page.getByText(exName)).toBeVisible();
+    await page.getByRole("button", { name: "Empezar sesión" }).click();
 
-    // primera serie: +peso x2, +reps, marcar hecha
-    const setSection = page.locator("section", { hasText: exName });
-    await setSection.getByRole("button", { name: "kg más" }).first().click();
-    await setSection.getByRole("button", { name: "kg más" }).first().click();
-    await setSection
-      .getByRole("button", { name: /reps .* más/ })
-      .first()
-      .click();
-    await page.getByRole("button", { name: "Marcar serie como hecha" }).first().click();
-    await expect(page.getByText(/1 \/ \d+ series/)).toBeVisible();
+    // FocusSession: un ejercicio a la vez, cifras grandes
+    await expect(page.getByRole("heading", { name: exName })).toBeVisible();
+    await expect(page.getByText(/0\/\d+ series/)).toBeVisible();
+
+    // primera serie: +peso x2, +reps, "serie hecha"
+    await page.getByRole("button", { name: "+2.5" }).click();
+    await page.getByRole("button", { name: "+2.5" }).click();
+    await page.getByRole("button", { name: "Más repeticiones" }).click();
+    await page.getByRole("button", { name: /Serie hecha/ }).click();
+
+    // el descanso arranca a pantalla completa -> saltarlo
+    await page.getByRole("button", { name: "Saltar descanso" }).click();
+    await expect(page.getByText(/1\/\d+ series/)).toBeVisible();
 
     // terminar
     await page.getByLabel("Nota (opcional)").fill("Test e2e");
@@ -117,5 +127,21 @@ test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
     // actividad reciente refleja la serie completada
     await expect(page.getByText(`Día 1 ${run}`)).toBeVisible();
     await expect(page.getByText(/1\/\d+ series/)).toBeVisible();
+
+    // --- Coach: buzón de mensajes -> escribe al atleta -------------------
+    await page.goto("/mensajes");
+    await page.getByRole("link", { name: /E2E athlete/ }).click();
+    await expect(page).toHaveURL(/\/mensajes\/[0-9a-f-]+/);
+    const note = `Buen trabajo ${run}`;
+    await page.getByLabel("Mensaje").fill(note);
+    await page.getByRole("button", { name: "Enviar" }).click();
+    await expect(page.getByText(note)).toBeVisible();
+
+    // --- Atleta: ve el mensaje del coach --------------------------------
+    await logout(page);
+    await login(page, E2E_USERS.athlete);
+    await expect(page).toHaveURL(/\/hoy$/); // esperar a que la sesión esté lista
+    await page.goto("/coach");
+    await expect(page.getByText(note)).toBeVisible();
   });
 });

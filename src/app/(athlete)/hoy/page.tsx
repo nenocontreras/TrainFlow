@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Dumbbell } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getTodayView } from "@/lib/queries/today";
+import { getAthleteHomeStats } from "@/lib/queries/history";
 import { TodayView } from "./today-view";
 
 export const metadata: Metadata = { title: "Hoy" };
@@ -31,5 +32,7 @@ export default async function TodayPage({
     );
   }
 
-  return <TodayView data={data} />;
+  const homeStats = await getAthleteHomeStats();
+
+  return <TodayView data={data} homeStats={homeStats} />;
 }
