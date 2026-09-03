@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
@@ -44,7 +45,7 @@ export async function getAthleteThread(): Promise<AthleteThread | null> {
   const me = await currentUserId(supabase);
   if (!me) return null;
 
-  const { data: rel } = await supabase
+  const { data: rel, error: relError } = await supabase
     .from("coach_athlete_relationships")
     .select("coach_id, coach:profiles!coach_athlete_relationships_coach_id_fkey(id, full_name)")
     .eq("athlete_id", me)
@@ -52,15 +53,17 @@ export async function getAthleteThread(): Promise<AthleteThread | null> {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (relError) throw relError;
   if (!rel?.coach_id) return null;
   const coach = rel.coach as PeerProfile;
 
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("messages")
     .select(MESSAGE_COLS)
     .eq("coach_id", rel.coach_id)
     .eq("athlete_id", me)
     .order("sent_at", { ascending: true });
+  if (error) throw error;
 
   return {
     coachId: rel.coach_id,
@@ -87,23 +90,25 @@ export async function listCoachThreads(): Promise<CoachThreadSummary[]> {
   const me = await currentUserId(supabase);
   if (!me) return [];
 
-  const { data: rels } = await supabase
+  const { data: rels, error: relsError } = await supabase
     .from("coach_athlete_relationships")
     .select("athlete:profiles!coach_athlete_relationships_athlete_id_fkey(id, full_name)")
     .eq("coach_id", me)
     .eq("status", "active")
     .order("created_at", { ascending: true });
+  if (relsError) throw relsError;
 
   const athletes = (rels ?? [])
     .map((r) => r.athlete as PeerProfile)
     .filter((a): a is { id: string; full_name: string } => a !== null);
   if (athletes.length === 0) return [];
 
-  const { data: msgs } = await supabase
+  const { data: msgs, error: msgsError } = await supabase
     .from("messages")
     .select("athlete_id, sender_id, body, sent_at")
     .eq("coach_id", me)
     .order("sent_at", { ascending: false });
+  if (msgsError) throw msgsError;
 
   const lastByAthlete = new Map<string, { body: string; sent_at: string; sender_id: string }>();
   for (const m of msgs ?? []) {
@@ -132,6 +137,8 @@ export interface CoachThread {
 
 /** Hilo del coach con un atleta suyo, o `null` si no es su atleta activo. */
 export async function getCoachThread(athleteId: string): Promise<CoachThread | null> {
+  if (!z.guid().safeParse(athleteId).success) return null;
+
   const supabase = await createClient();
   const me = await currentUserId(supabase);
   if (!me) return null;
@@ -146,12 +153,13 @@ export async function getCoachThread(athleteId: string): Promise<CoachThread | n
   const athlete = (rel?.athlete ?? null) as PeerProfile;
   if (!athlete) return null;
 
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("messages")
     .select(MESSAGE_COLS)
     .eq("coach_id", me)
     .eq("athlete_id", athleteId)
     .order("sent_at", { ascending: true });
+  if (error) throw error;
 
   return {
     athleteId,

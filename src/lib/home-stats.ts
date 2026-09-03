@@ -36,11 +36,15 @@ export interface HomeStats {
 
 const WEEKDAY_INITIALS = ["L", "M", "X", "J", "V", "S", "D"];
 
-/** Lunes 00:00 (hora local) de la semana que contiene `d`. */
-function mondayOf(d: Date): Date {
-  const day = (d.getDay() + 6) % 7; // 0 = lunes
-  const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day);
-  return monday;
+/**
+ * Milisegundos del lunes 00:00 UTC de la semana que contiene `ms`. Todo el
+ * cálculo va en UTC — igual que `performed_on` (migración 0009) y `progress.ts` —
+ * para no mezclar husos (no guardamos la zona del atleta).
+ */
+function mondayOfUTC(ms: number): number {
+  const d = new Date(ms);
+  const day = (d.getUTCDay() + 6) % 7; // 0 = lunes
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day);
 }
 
 export function computeHomeStats(
@@ -48,10 +52,9 @@ export function computeHomeStats(
   nowISO: string,
   blockStartISO: string | null,
 ): HomeStats {
-  const now = new Date(nowISO);
-  const nowMs = now.getTime();
+  const nowMs = Date.parse(nowISO);
   const blockStart = blockStartISO
-    ? Date.parse(`${blockStartISO}T00:00:00`)
+    ? Date.parse(`${blockStartISO}T00:00:00Z`)
     : Number.NEGATIVE_INFINITY;
 
   const dated = sessions
@@ -69,8 +72,8 @@ export function computeHomeStats(
   }
 
   // --- Racha semanal ----------------------------------------------------
-  const trainedWeeks = new Set(dated.map((s) => mondayOf(new Date(s.ms)).getTime()));
-  const thisMonday = mondayOf(now).getTime();
+  const trainedWeeks = new Set(dated.map((s) => mondayOfUTC(s.ms)));
+  const thisMonday = mondayOfUTC(nowMs);
   let weekStreak = 0;
   for (let i = 0; i < 104; i++) {
     const wk = thisMonday - i * 7 * DAY_MS;

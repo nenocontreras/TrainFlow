@@ -65,7 +65,7 @@ type HomeStatsRow = {
 export async function getAthleteHomeStats(): Promise<HomeStats> {
   const supabase = await createClient();
 
-  const [{ data: rows }, { data: assignment }] = await Promise.all([
+  const [sessionsRes, assignmentRes] = await Promise.all([
     supabase
       .from("workout_sessions")
       .select(
@@ -80,6 +80,10 @@ export async function getAthleteHomeStats(): Promise<HomeStats> {
       .limit(1)
       .maybeSingle(),
   ]);
+  if (sessionsRes.error) throw sessionsRes.error;
+  if (assignmentRes.error) throw assignmentRes.error;
+  const { data: rows } = sessionsRes;
+  const { data: assignment } = assignmentRes;
 
   const sessions: StatSession[] = ((rows ?? []) as HomeStatsRow[]).map((r) => ({
     performedAt: r.performed_at,

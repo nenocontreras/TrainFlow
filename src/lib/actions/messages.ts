@@ -10,6 +10,9 @@ import { sendMessageSchema, type SendResult } from "@/lib/validations/messages";
  * partes: el emisor es siempre `auth.uid()` y el hilo se resuelve desde la
  * relación coach↔atleta activa. La seguridad real la da RLS
  * (`messages_insert_sender` + `in_coach_thread`).
+ *
+ * NO usa la forma `(prev, FormData)` ni `ActionState`: la llama directamente
+ * `<ChatThread>` con `(athleteId, body)` y solo mira `ok` / `error`.
  */
 export async function sendMessageAction(athleteId: string, body: string): Promise<SendResult> {
   const { id: me } = await requireUser();
@@ -21,6 +24,8 @@ export async function sendMessageAction(athleteId: string, body: string): Promis
 
   const supabase = await createClient();
 
+  // `me` es un UUID garantizado por la sesión (no entrada del usuario), así que
+  // interpolarlo en el filtro `.or(...)` es seguro; RLS lo re-valida igualmente.
   const { data: rel } = await supabase
     .from("coach_athlete_relationships")
     .select("coach_id, athlete_id")

@@ -331,7 +331,33 @@ function describeRlsSuite(): void {
       expect(error).not.toBeNull(); // choca con idx_plan_assignments_active_unique
     });
 
-    // --- Chat coach ↔ atleta (migraciones 0011 + 0012) --------------------
+    // --- Chat coach ↔ atleta (migraciones 0011 + 0012 + 0013) ------------
+
+    it("un atleta NO puede forjar un vínculo coach-atleta (migración 0013)", async () => {
+      // Antes de 0013, B podía insertarse `{coach_id: B, athlete_id: A}` y con eso
+      // abrir un hilo y leer el perfil de A. Ahora no hay política de INSERT.
+      const forge = await clientB.from("coach_athlete_relationships").insert({
+        coach_id: ids.athleteB,
+        athlete_id: ids.athleteA,
+        status: "active",
+      });
+      expect(forge.error).not.toBeNull();
+
+      // Y por tanto sigue sin poder leer el perfil ni los mensajes de A.
+      const prof = await clientB.from("profiles").select("id").eq("id", ids.athleteA).maybeSingle();
+      expect(prof.data).toBeNull();
+
+      const msgs = await clientB.from("messages").select("id").eq("athlete_id", ids.athleteA);
+      expect(msgs.data ?? []).toHaveLength(0);
+    });
+
+    it("un cliente anónimo no puede leer mensajes", async () => {
+      const anon = createClient(url!, anonKey!, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { data } = await anon.from("messages").select("id");
+      expect(data ?? []).toHaveLength(0);
+    });
 
     it("el atleta A puede leer el perfil de su coach (migración 0012)", async () => {
       const { data } = await clientA

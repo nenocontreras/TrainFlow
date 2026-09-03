@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/queries/messages";
 import type { SendResult } from "@/lib/validations/messages";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,10 @@ export function ChatThread({
         quote: null,
       });
       const res = await sendAction(threadAthleteId, text);
-      if (!res.ok) setDraft(text);
+      if (!res.ok) {
+        setDraft(text);
+        toast.error(res.error ?? "No se pudo enviar el mensaje.");
+      }
     });
   }
 
