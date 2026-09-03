@@ -138,8 +138,8 @@ pnpm dev            # http://localhost:3000
 - **Vista "Hoy"** del atleta (`/hoy`): el día del plan se resuelve por **rotación
   por progreso** (`src/lib/today.ts`) — el siguiente del ciclo según sesiones
   hechas; el atleta puede elegir otro. "Empezar" crea la sesión y sus series;
-  registro con steppers +/- de peso y reps, botón "hecho" con feedback optimista
-  (`useOptimistic`). Nota final. Descartar sesión.
+  registro con feedback optimista (`useOptimistic`). Nota final. Descartar sesión.
+  (La UI se rediseñó después — ver "Rediseño de 'Hoy'" más abajo.)
 - **Historial** (`/historial`): sesiones pasadas con fecha, día y series completadas.
 
 ## Panel del coach y progreso (Fase 4)
@@ -186,6 +186,33 @@ pnpm dev            # http://localhost:3000
 - **Íconos**: `pnpm pwa:icons` los regenera a `public/icons/` desde
   `scripts/generate-pwa-icons.mjs` (rayo volt sobre carbón, colores del sistema
   "Forge"). `public/sw.js` se compila en cada build y está git-ignorado.
+
+## Rediseño de "Hoy", chat y métricas (post-MVP)
+
+- **Vista "Hoy" en modo enfoque** (`src/app/(athlete)/hoy/`):
+  - `HomeToday` — inicio "sesión primero": la tarjeta del día ocupa el fold.
+  - `FocusSession` — sesión en curso a **un ejercicio por pantalla**, cifras
+    grandes, una acción primaria, y descanso a pantalla completa
+    (`rest-overlay.tsx` + `use-rest-timer.ts`). Reemplaza a la lista `LoggingView`.
+- **Métricas de inicio** — `src/lib/home-stats.ts` (puro, test): racha de semanas
+  seguidas, volumen de 7 días en toneladas, PRs del bloque (mejor 1RM estimado
+  desde el inicio de la asignación activa) y marca de la semana en curso. Todo en
+  UTC. `getAthleteHomeStats` en `queries/history.ts` alimenta `HomeToday`.
+- **Chat coach ↔ atleta**:
+  - Atleta: **`/coach`** — su hilo. Coach: **`/mensajes`** (buzón) y
+    **`/mensajes/[athleteId]`** (conversación). `ChatThread` compartido, envío
+    con feedback optimista.
+  - **Migración 0011**: tabla `messages` con RLS (`in_coach_thread`: ambas partes
+    de una relación activa; mensajes inmutables).
+  - **Migración 0012**: `profiles` SELECT simétrico (`coach_of_viewer`) — el
+    atleta ya puede leer el nombre de su coach.
+  - **Migración 0013**: elimina la política de INSERT de
+    `coach_athlete_relationships`. Antes, cualquier autenticado podía forjar un
+    vínculo (y con el chat, abrir un hilo con una víctima); ahora todos los
+    vínculos pasan por `link_athlete_by_email`. (hallazgo del `rls-reviewer`.)
+  - El **coach responde desde su buzón**; no hay aún indicador de "no leído" real
+    (falta una tabla de lecturas) — la señal es "el último mensaje lo escribió el
+    atleta".
 
 ## Layout
 
