@@ -8,17 +8,7 @@ import { startSessionAction } from "@/lib/actions/sessions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TodayDay } from "@/lib/queries/today";
-
-export interface HomeStats {
-  /** Semanas consecutivas con al menos una sesión. */
-  weekStreak: number;
-  /** Volumen de los últimos 7 días en toneladas (kg totales / 1000). */
-  volume7dTons: number;
-  /** Récords estimados batidos en el bloque actual. */
-  prsThisBlock: number;
-  /** Marca por día de la semana actual: etiqueta del día entrenado o `null`. */
-  week: { dia: string; marca: string | null }[];
-}
+import type { HomeStats } from "@/lib/home-stats";
 
 /**
  * Inicio del atleta, jerarquía "sesión primero" (opción 1d): la tarjeta de hoy

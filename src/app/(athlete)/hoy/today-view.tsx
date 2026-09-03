@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarClock } from "lucide-react";
 import type { TodayView as TodayViewData } from "@/lib/queries/today";
+import type { HomeStats } from "@/lib/home-stats";
 import { FocusSession } from "./focus-session";
 import { HomeToday } from "./home-today";
 
-export function TodayView({ data }: { data: TodayViewData }) {
+export function TodayView({ data, homeStats }: { data: TodayViewData; homeStats?: HomeStats }) {
   const router = useRouter();
   const [pickedDayId, setPickedDayId] = useState<string | null>(data.currentDay?.id ?? null);
 
@@ -46,6 +47,7 @@ export function TodayView({ data }: { data: TodayViewData }) {
       day={day}
       days={data.days}
       onPickDay={(id) => setPickedDayId(id)}
+      stats={homeStats}
     />
   );
 }
