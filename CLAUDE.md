@@ -18,7 +18,7 @@ proceeds one functional module per branch + PR + a business-logic test.
 
 ## Commands
 
-Package manager is **pnpm** (`pnpm@11`, Node ≥20.11). Common:
+Package manager is **pnpm** (`pnpm@11`, Node ≥22.13). Common:
 
 | Task                               | Command                                        |
 | ---------------------------------- | ---------------------------------------------- |
