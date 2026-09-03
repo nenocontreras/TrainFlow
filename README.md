@@ -24,7 +24,7 @@ Especificación completa: [`TrainFlow_SPEC.md`](./TrainFlow_SPEC.md).
 
 ## Requisitos
 
-- Node.js ≥ 20.11
+- Node.js ≥ 22.13 (lo exige `pnpm@11.24`; usa `node:sqlite`)
 - pnpm ≥ 11 (`npm i -g pnpm`)
 - Un proyecto **Supabase Cloud** (free tier) para desarrollo.
   Docker + Supabase local también sirve si tu máquina tiene RAM de sobra
