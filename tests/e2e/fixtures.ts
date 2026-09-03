@@ -62,6 +62,7 @@ export async function resetE2ECoachData(): Promise<void> {
     await admin.from("plan_assignments").delete().eq("athlete_id", athleteId);
   }
   if (coachId) {
+    await admin.from("messages").delete().eq("coach_id", coachId);
     await admin.from("training_plans").delete().eq("coach_id", coachId);
     await admin.from("exercise_library").delete().eq("coach_id", coachId);
     await admin.from("coach_athlete_relationships").delete().eq("coach_id", coachId);

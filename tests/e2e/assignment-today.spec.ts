@@ -1,8 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { E2E_PASSWORD, E2E_READY, E2E_USERS } from "./fixtures";
+import { E2E_PASSWORD, E2E_READY, E2E_USERS, resetE2ECoachData } from "./fixtures";
 
 test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
   test.skip(!E2E_READY, "requiere credenciales de Supabase");
+
+  // Datos limpios en cada intento (incluidos los reintentos): este flujo crea
+  // sesión + mensajes y un reintento sobre datos sucios rompía en cascada.
+  test.beforeEach(async () => {
+    await resetE2ECoachData();
+  });
 
   const run = String(Date.now()).slice(-6);
 
@@ -134,6 +140,7 @@ test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
     // --- Atleta: ve el mensaje del coach --------------------------------
     await logout(page);
     await login(page, E2E_USERS.athlete);
+    await expect(page).toHaveURL(/\/hoy$/); // esperar a que la sesión esté lista
     await page.goto("/coach");
     await expect(page.getByText(note)).toBeVisible();
   });
