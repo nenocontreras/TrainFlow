@@ -73,19 +73,23 @@ test.describe("Fases 3-4: asignación, vista Hoy y progreso del coach", () => {
     await expect(page).toHaveURL(/\/hoy$/);
     await expect(page.getByRole("heading", { name: "Hoy te toca" })).toBeVisible();
 
-    await page.getByRole("button", { name: new RegExp(`Empezar Día 1 ${run}`) }).click();
-    await expect(page.getByText(/0 \/ \d+ series/)).toBeVisible();
+    // HomeToday: la tarjeta de hoy con el ejercicio y el botón de empezar
+    await expect(page.getByText(exName)).toBeVisible();
+    await page.getByRole("button", { name: "Empezar sesión" }).click();
 
-    // primera serie: +peso x2, +reps, marcar hecha
-    const setSection = page.locator("section", { hasText: exName });
-    await setSection.getByRole("button", { name: "kg más" }).first().click();
-    await setSection.getByRole("button", { name: "kg más" }).first().click();
-    await setSection
-      .getByRole("button", { name: /reps .* más/ })
-      .first()
-      .click();
-    await page.getByRole("button", { name: "Marcar serie como hecha" }).first().click();
-    await expect(page.getByText(/1 \/ \d+ series/)).toBeVisible();
+    // FocusSession: un ejercicio a la vez, cifras grandes
+    await expect(page.getByRole("heading", { name: exName })).toBeVisible();
+    await expect(page.getByText(/0\/\d+ series/)).toBeVisible();
+
+    // primera serie: +peso x2, +reps, "serie hecha"
+    await page.getByRole("button", { name: "+2.5" }).click();
+    await page.getByRole("button", { name: "+2.5" }).click();
+    await page.getByRole("button", { name: "Más repeticiones" }).click();
+    await page.getByRole("button", { name: /Serie hecha/ }).click();
+
+    // el descanso arranca a pantalla completa -> saltarlo
+    await page.getByRole("button", { name: "Saltar descanso" }).click();
+    await expect(page.getByText(/1\/\d+ series/)).toBeVisible();
 
     // terminar
     await page.getByLabel("Nota (opcional)").fill("Test e2e");
