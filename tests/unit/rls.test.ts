@@ -331,6 +331,100 @@ function describeRlsSuite(): void {
       expect(error).not.toBeNull(); // choca con idx_plan_assignments_active_unique
     });
 
+    // --- Chat coach ↔ atleta (migraciones 0011 + 0012) --------------------
+
+    it("el atleta A puede leer el perfil de su coach (migración 0012)", async () => {
+      const { data } = await clientA
+        .from("profiles")
+        .select("id, full_name")
+        .eq("id", ids.coach)
+        .maybeSingle();
+      expect(data?.full_name).toBe("Coach Test");
+    });
+
+    it("el atleta A NO puede leer el perfil del atleta B (sin relación)", async () => {
+      const { data } = await clientA
+        .from("profiles")
+        .select("id")
+        .eq("id", ids.athleteB)
+        .maybeSingle();
+      expect(data).toBeNull();
+    });
+
+    it("el atleta A escribe en su hilo con el coach y el coach lo lee", async () => {
+      const ins = await clientA.from("messages").insert({
+        coach_id: ids.coach,
+        athlete_id: ids.athleteA,
+        sender_id: ids.athleteA,
+        body: "Hola coach, ¿subo el peso en sentadilla?",
+      });
+      expect(ins.error).toBeNull();
+
+      const { data } = await clientCoach
+        .from("messages")
+        .select("body, sender_id")
+        .eq("athlete_id", ids.athleteA);
+      expect((data ?? []).map((m) => m.body)).toContain("Hola coach, ¿subo el peso en sentadilla?");
+    });
+
+    it("el coach responde en el hilo y el atleta A lo lee", async () => {
+      const ins = await clientCoach.from("messages").insert({
+        coach_id: ids.coach,
+        athlete_id: ids.athleteA,
+        sender_id: ids.coach,
+        body: "Sí, +2.5 kg esta semana.",
+      });
+      expect(ins.error).toBeNull();
+
+      const { data } = await clientA.from("messages").select("body").eq("coach_id", ids.coach);
+      expect((data ?? []).map((m) => m.body)).toContain("Sí, +2.5 kg esta semana.");
+    });
+
+    it("el atleta B NO puede leer el hilo de A con el coach", async () => {
+      const { data } = await clientB.from("messages").select("id").eq("athlete_id", ids.athleteA);
+      expect(data ?? []).toHaveLength(0);
+    });
+
+    it("el atleta B NO puede escribir en el hilo de A con el coach", async () => {
+      const { error } = await clientB.from("messages").insert({
+        coach_id: ids.coach,
+        athlete_id: ids.athleteA,
+        sender_id: ids.athleteB,
+        body: "intruso",
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("nadie puede suplantar a otro como sender_id", async () => {
+      const { error } = await clientA.from("messages").insert({
+        coach_id: ids.coach,
+        athlete_id: ids.athleteA,
+        sender_id: ids.coach, // A intenta escribir "como el coach"
+        body: "firmado por el coach",
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("los mensajes son inmutables (sin update ni delete)", async () => {
+      const { data: mine } = await clientA
+        .from("messages")
+        .select("id")
+        .eq("sender_id", ids.athleteA)
+        .limit(1)
+        .maybeSingle();
+      expect(mine?.id).toBeTruthy();
+
+      const upd = await clientA
+        .from("messages")
+        .update({ body: "editado" })
+        .eq("id", mine!.id)
+        .select("id");
+      expect(upd.data ?? []).toHaveLength(0);
+
+      const del = await clientA.from("messages").delete().eq("id", mine!.id).select("id");
+      expect(del.data ?? []).toHaveLength(0);
+    });
+
     // --- Fase 4: on delete set null en el historial (migración 0009) --------
     // Este bloque borra ctx.planDayId — debe ir el último.
 
